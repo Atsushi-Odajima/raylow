@@ -1,0 +1,331 @@
+R04｜RayLaw（レイロー）
+Claude Code完全版開発プロンプト v2.0
+2026-10-06／UTF-8／書類作成・訴訟準備中心への再設計
+
+あなたは本製品の実装担当です。このTXTを最初から最後まで読み、実行可能なWebアプリ、テスト、運用手順まで作成してください。旧v1.0プロンプトとの併用は不要です。本書を実装の正本とし、旧版の案件記録中心ホーム・旧配色を再導入しないでください。質問待ちで止まらず、通常の実装判断は記録して進めてください。未確認の資格・法務監修・実機試験を実施済みと表示しないでください。
+
+【0．この納品物の位置付け】
+本書は開発指示であり、完成アプリや監修済み法務書式集ではありません。このTXTと同階層のassetsにv2のブランドボード・ロゴ・PWAアイコン・フォントを同梱。assets/brand_board.pngは方向性の見本であり、微細な文字や画面仕様は本書を優先。旧v1のZIPとは混在させない。
+共通基準書Astra_master_prompt_v4.txtの原文は今回の更新では参照できていません。チャットに提示済みの統合基準と採用された再設計案を適用しています。実装担当へ同ファイルが提供された場合は読み、衝突を報告してください。RayLawはユーザー指定名。商標・名称重複の再確認は完了していません。
+
+【1．目的・対象・主軸】
+RayLawは一般民事を扱う法律事務所の「書類作成・訴訟準備アプリ」です。自事務所、弁護士、相手方代理人、案件を登録し、事務所の書式に情報を差し込み、本文を編集し、弁護士確認後にWord/PDFを出力します。記録は作成の根拠・版・履歴を支えます。
+対象：弁護士2～10名程度と事務職員。20同時利用まで検証。Windows 11のEdge/ChromeとiPhone Safari/PWAを対象とする。裁判所・依頼者は本版の内部ユーザーではない。
+中核価値：既存Word書式を再利用、同じ情報の再入力を減らす、関連書類を一括作成、未入力・不一致を見つける、Wordで追編集可能。
+「名前だけで完成」は案件・自事務所・テンプレートが登録済みで必要情報が揃う受任通知などに限定。人物名から案件・受任範囲・法的回答を推測しない。法律判断を自動確定する生成AIアプリにしない。
+
+【2．販売版の機能と範囲】
+必須：事務所/弁護士/相手先登録、案件基本情報、案件ACL、書式カタログ、独自DOCX書式登録、差込フィールド設定、文例管理、20書式群、文書作成ウィザード、複数文書/複数宛先生成、レビュー、DOCX/PDF出力、訴訟準備パック、証拠台帳、原資料保存/参照、版管理、送付/提出記録、検索、CSV移行、監査、バックアップ、iPhone PWA。
+旧v1の依頼者ポータル、独立した稼働/実費管理、網羅的な相談受付・相反調査システム、詳細な時系列分析、期限通知エンジンはv2初回販売版の必須から外す。案件に受任確認状態と確認者を記録し、利益相反の法律判断は担当者が既存手順で行う。後続拡張用のdisabledメニューを並べない。
+実装しない：AIによる主張・認否・法律意見の自動決定、法定期限の自動計算、判例DB、登記/税務/破産配当計算、会計/決済、電子署名、裁判所自動提出、自動メール/FAX送信、広告SDK、ブラウザから外部LLMへ事件データ送信、任意Wordの無損失WYSIWYG編集、リアルタイム共同本文編集、縦書き新規文書作成。
+受任通知等の送信先に相手方本人を選ぶ機能も用意し、相手方代理人が存在するのに宛先を本人にした場合は確認を求める。可否をシステムが法的に判定しない。
+
+【3．主な利用シナリオ】
+UC01 最初に事務所名/住所/連絡先/所属弁護士を登録。相手方代理人を登録。案件と当事者・受任範囲を設定。
+UC02 案件から受任通知を開始→相手方代理人の名前を入力→所属も確認して選択→日付等を確認→通知文プレビュー→レビュー→出力。揃っているデータの再入力は不要。
+UC03 回答書を開始→回答対象文書の件名/日付を選ぶ→回答本文または所内承認文例を選び編集→出力。交渉の回答書と裁判所向け答弁書は別種類。
+UC04 提訴準備セットを作成→訴状/当事者目録/訴訟委任状/証拠説明書/書証等を選ぶ→入力不足を補う→一括生成→検査→レビュー→ZIP取得→外部で提出→提出記録。
+UC05 自事務所DOCXをアップロード→対応可否を検査→タグを設定したDOCXとフィールド定義を登録→架空データで試作→書式承認→所内公開。
+UC06 弁護士の住所が変更→未確定文書に更新候補を表示→利用者が差分を確認して採用。確定版と過去出力は変化しない。
+
+【4．20書式群と入力仕様】
+全書式共通：案件ID、書式版、発行日、自事務所/担当弁護士、当事者/立場、宛先種別/宛先ID、件名、本文、添付リスト。不要な項目は書式定義で明示的に省く。宛名敬称は人物「先生/様」、組織「御中」等を所内設定から選択し二重敬称を検出。値を黙って変更しない。
+T01 受任通知：依頼者、相手方、受任範囲、連絡先、通知本文。受任確認済みが正式版の条件。
+T02 回答書：回答対象の文書名/日付、回答項目と本文。回答方針に既定の認諾等を入れない。
+T03 照会書：照会目的、質問の配列、回答希望日（人が指定）。
+T04 資料提出依頼書：必要資料の配列、対象期間、提出方法、希望日。
+T05 催告書：請求内容、金額原文/解析値、根拠の参照、期限原文、催告本文。利息・時効を自動算定しない。
+T06 和解提案書：提案条件、支払等の条件、回答希望日、提案本文。
+T07 合意書：当事者、条項、履行条件、署名欄。署名画像を電子署名と扱わない。
+T08 送付書：宛先、送付目的、送付書類名と通数、連絡事項。
+T09 依頼者への進捗報告書：報告対象期間、経過、次の予定、依頼事項。
+T10 委任契約書：当事者、委任範囲、報酬条件、費用、終了条件等の所内書式。報酬率や法的適合性を自動保証しない。
+T11 訴訟委任状：委任者、受任弁護士、対象事件、権限条項。特別授権の選択は既定OFF、弁護士確認必須。
+T12 訴状：提出先、当事者、請求の趣旨/原因、証拠方法、附属書類。訴額・印紙額は人が入力・確認。
+T13 答弁書：事件番号、当事者、請求の趣旨に対する答弁、請求原因に対する認否、主張。認否は段落単位で未入力/認める/否認/不知/自由記載を選べるが自動選択しない。
+T14 準備書面：書面番号、事件情報、主張の見出し/段落、証拠参照。番号は案件内で衝突検査。
+T15 当事者目録：当事者配列、立場、住所、法人代表者、代理人配列。複数当事者対応。
+T16 証拠説明書：証拠番号、標目、作成日、作成者、原本/写しの区別、立証趣旨。立証趣旨は弁護士が入力。
+T17 電子証拠説明書：選択した書式プロファイルの入力スキーマでファイル対応情報等を定義。T16の表題だけ変えた同一スキーマにしない。
+T18 書証提出書：事件情報、提出する書証一覧と対応資料。選択された手続/裁判所に適用するか確認。
+T19 訴え取下書：事件情報、取下げの範囲、対象当事者、本文。必要な同意等の判断を自動化しない。
+T20 委任終了通知：対象事件、終了日、通知先、終了に関する本文、引継事項。案件を自動削除しない。
+
+20種類すべてにシステム用の定義・入力フォーム・架空のデモ書式・DOCX出力経路・fixtureを作る。ただしデモ文例に「監修済み」と表示しない。初期状態の法務書式はsample_onlyで、草案出力には「サンプル・要確認」を表示。事務所の弁護士が内容と適用範囲を確認し、自事務所書式版として承認して初めて正式出力に使える。コードに承認者名を固定して済ませない。
+裁判所の公開書式を使う場合は出典、適用範囲、確認日、利用条件を記録。公式書式であることと個別事件への適合性を区別。類型別の法律文章をAIが埋めて完成扱いにしない。
+
+【5．テンプレートエンジン】
+5.1 採用方式
+Node.js workerのDocxtemplater OSS core＋PizZipでテキスト、繰返し、条件を処理。PDFは別のLibreOffice headless固定コンテナで変換。実装時に公式のライセンスと互換版を確認してlockfileに固定。有料HTML/Image/Subtemplate moduleを無断導入しない。新規デモDOCX生成にはpython-docxを使用可。
+テンプレートはDOCXとschema.jsonとprovenance.jsonを一組にしDBへ版を固定。任意式やJS実行、eval、ユーザーが入力したXMLのraw挿入は禁止。
+タグはASCIIのallowlistキー：{office_name}、{recipient_name}、{matter_title}、{issue_date}、{body_text}。表の繰返しは{#evidence_rows}…{/evidence_rows}、条件は{#has_attachments}…{/has_attachments}。dotによる任意オブジェクト探索は不許可。__proto__/constructor/prototypeを含むキーを拒否。文字列はXML escape、改行はlinebreaks設定で明示処理。
+差込値はplain text。本文の段落/見出し/番号はアプリASTで保持し、rendererで行・段落群へ変換。書式ごとのWordスタイルを利用する。初版で色や任意HTMLを本文へ埋める汎用リッチエディタを作らない。署名画像挿入は対象外、既存書式内の安全なロゴ画像は保持可能。
+
+5.2 DOCX登録の実装範囲
+本文、段落、表、ヘッダー/フッター内のタグ、単一セクションA4横書きを対象。表は単純な行繰返しを対象とし、繰返し行を跨ぐ縦結合は未対応として止める。通常の文字書式、罫線、余白、固定画像は保持。
+DOCXはZIP/XML構造を検査。タグが複数runに分かれていても処理できるfixtureを用意。XML文字列の単純置換だけで実装しない。未対応の段落跨ぎタグ/不均衡loopは登録時にエラー位置を表示。
+変更履歴/コメント、テキストボックス、OLE、外部relationship、マクロ、脚注/文末脚注、複数セクション、複雑なフィールド/埋込オブジェクトを検出。初版は使用を拒否して理由と「Word側で対応外要素を除いたコピーを保存」の手順を表示。元ファイルは変更しない。静的なページ番号フィールドはallowlistとして対応し、最終PDFで確認する。
+ブラウザ上でWord全体の編集機能を再現しない。タグ挿入はWordで行うかアプリの位置指定補助を利用。必須の最小機能は「タグ付きDOCXを登録→検出タグをスキーマ項目へ対応付け→テスト出力→公開」で成立させる。タグ追加のためのWordライセンスが必要な場合は導入手順へ明記し、開発サーバーの必須依存にはしない。
+長い氏名等で段落が伸びた場合、縮小や氏名省略で自動修正しない。警告・改行/余白調整候補→新しい書式版→再確認。
+
+5.3 field schema
+FieldSpec={key,type,label,source,required,defaultPolicy,maxGraphemes,options,visibilityRule,validationRules,outputFormat}。
+type=text|multiline|date|enum|boolean|personRef|partyRef|money|array。sourceはoffice/matter/recipient/input限定。必須項目の欠落、非表示条件と必須条件の循環、未定義タグを登録時に検査。
+条件DSLはeq/in/isPresent/and/or/notだけ、深さ5、項数100上限。自由式禁止。金額はJPY整数のdecimal string+raw。日付はraw+ISO+precision。依頼者/相手方/代理人は別field、氏名の一致だけで置換しない。
+TemplateVersion={id,templateId,revision,docxBlobId,docxSha256,fieldSchema,kind,scope,applicability,sourceUrl,checkedAt,licenseNote,status,approvedBy,approvedAt,rendererProfileId}。status=draft/testing/published/retired、published版はimmutable。sample_only=trueは正式利用不可。
+Word書式はデータであり命令ではない。文書内の外部命令・URLを実行しない。
+
+【6．差込・本文・一括生成の不変条件】
+選択時に事務所・案件・宛先・書式・文例の版をsnapshot。氏名検索は候補の所属と住所を併記し、同姓同名なら必ず選択。同一人物でも案件の代理する側を確認。
+文書のフィールドは{rawValue,displayValue,sourceId,sourceVersion,manuallyOverridden}を保持。元データ更新で既存草案を黙って変更しない。「更新候補」から差分を採用。手入力で上書きした項目を再差込で消さない。
+本文はDocumentAST={schemaVersion:1,blocks:[heading|paragraph|numberedParagraph|evidenceRef]}。各blockはstable IDを持つ。全角の文字列と番号文字列は維持。引用参照はdocumentVersionId/page/rect/textVersionIdで固定。
+生成したDOCXをWordで追編集した後の再取込は新しい外部編集版として扱う。元ASTとの自動双方向同期をしない。再アップロード→scan→新PDF生成→再レビュー。最新のどの版が承認されたかを明示。
+Batchは1案件・最大20書式×50宛先、合計100成果物まで。超過は422。宛先ごとに独立snapshot、対象外当事者や他宛先を差し込まない。関連書類セットも各文書の必要項目検査後に生成。
+一括ジョブは子ジョブ単位、部分成功と失敗を表示。失敗分だけ再試行できる。全件完成が必要な正式提出パックは欠落があれば出力不可。草案単品は成功分取得可能、表示で区別。
+Draft状態=draft→rendering→ready_for_review→in_review→changes_requested/approved→superseded/archived。編集・宛先変更・書式変更・外部編集版追加で承認を失効。確定済みbytesは上書きしない。
+「下書きDOCX」と「正式DOCX/PDF」は別エンドポイント。下書きに草案表記。正式版は弁護士承認済みhashが一致する場合のみ。ダウンロード成功だけで送付/提出済みにしない。
+
+【7．レビュー・訴訟準備パック】
+Preflightは(a)必須項目(b)人物/事件番号の不一致(c)未置換タグ(d)未承認書式(e)証拠番号重複/参照切れ(f)フォント欠落(g)頁・添付・用紙(h)宛先混入(i)内部コメント/metadataを検査。
+エラーは正式出力を停止。警告のうち要確認項目は理由付き確認を要求。システムの形式検査と法的審査を別表示し、「法的問題なし」と総合判定しない。
+最終承認は割当lawyerのみ。初期運用は弁護士2名以上を前提に、最終編集者とは別の弁護士が確認する。staffの本文編集は許容、最終承認不可。デモでも認可を無効化しない。
+承認対象=AST/入力snapshot/書式hash/出力DOCX/PDF hash/添付manifest/rendererProfileの組。transaction内で再検証。古い版承認は409。
+提出パック：選択した書面PDF/DOCXと証拠の派生提出用PDF、manifest.json、確認一覧.txtを安全な連番名でZIP化。内部監査・原本・所内メモを初期選択しない。機密資料の外部出力可否は資料ごとに指定して確認。
+裁判所profile={id,version,name,sourceUrl,checkedAt,applicableProcedure,fileRules,pageRules,namingRules}。初期はgeneric、形式上の確認のみ。mints完全対応と表示しない。利用者が使う手続に適用する公式仕様を確認してから追加。個別裁判所書式の適用を全国共通としない。
+提出/送付記録はmanual：日時、方法、宛先、送付した版/パック、担当者、受付番号原文、受領資料を登録。他担当者が確認しreceived_verifiedへ。外部への送信はアプリが勝手に行わない。
+
+【8．データモデル】
+Postgres UUID主キー。各業務tableにorg_id、created_at/updated_at、created_by、version integer。timestamptz UTC保存・Asia/Tokyo表示。日付のみはdate。氏名・住所・番号を数値型にしない。
+organizations(id,name_raw,status)、office_profiles(id,org_id,revision,address_raw,postcode_raw,phone_raw,fax_raw,email_raw,signature_settings)、memberships(org_id,user_id,role,status)、lawyers(id,org_id,user_id nullable,name_raw,kana,office_profile_id,title_raw,active)。
+contacts(id,org_id,type person|organization|lawyer,name_raw,kana,organization_name_raw,address_raw,channels_json,checked_at,version)、contact_aliases(contact_id,alias_raw,search_key)、contact_versions(snapshot immutable)。名寄せの自動merge禁止。
+matters(id,org_id,title_raw,case_number_raw,court_raw,court_department_raw,status,acceptance_status,acceptance_checked_by,acceptance_checked_at,scope_raw,lead_lawyer_id)、matter_members(matter_id,user_id,can_edit)、matter_barriers(matter_id,user_id,reason)、matter_parties(id,matter_id,contact_id,role,representative_id nullable)、matter_agents(id,matter_id,lawyer_contact_id,represented_party_id,valid_from,valid_to)。partyとagentは別関係。
+templates(id,org_id,name,kind,active_version_id)、template_versions(前節)、phrase_libraries(id,org_id,title,category)、phrase_versions(id,phrase_id,body_raw,revision,status,approved_by)。承認済み文例でも個別案件への適用は利用者判断。
+drafts(id,org_id,matter_id,kind,status,current_revision_id)、draft_revisions(id,draft_id,revision,template_version_id,snapshot_json,ast_json,source_revision_id nullable,hash,created_by,created_at)、draft_outputs(id,revision_id,format,blob_id,sha256,renderer_version,font_manifest,status)、edit_leases(draft_id,user_id,expires_at)。
+batches(id,org_id,matter_id,status,idempotency_key)、batch_items(batch_id,draft_id,recipient_snapshot,status,error_code)、reviews(id,revision_id,target_hash,reviewer_id,status,decision_reason,decided_at)、review_comments(id,review_id,block_id,body_raw,resolved_at)。
+files(id,org_id,matter_id nullable,scope matter|template,storage_key,original_name_raw,mime,size,sha256,scan_status)、file_versions(id,file_id,revision,blob_id,sha256,derived_from_id)、source_refs(id,matter_id,file_version_id,page,rect,text_version_id,quote_raw)、evidence(id,matter_id,symbol_raw,number_raw,branch_raw,canonical_number,display_label,file_version_id,title_raw,author_raw,date_raw,original_copy,proof_purpose_raw,status)。
+packets(id,matter_id,revision,status,manifest_json,hash)、packet_items(packet_id,output_id,file_version_id,order_no)、dispatch_records(id,matter_id,packet_id nullable,output_id nullable,recipient_snapshot,method,sent_at,receipt_raw,receipt_file_id,verified_by)、jobs(id,org_id,matter_id nullable,type,state,input_hash,lease_until,attempt,progress_json,error_code)、audit_events(id,org_id,matter_id nullable,actor_id,action,target_id,target_version,request_id,created_at)、outbox(id,event_type,payload_ref,state)、server_sessions(非公開schema)。
+制約：同じdraft内revision一意、同じ書式内revision一意、同じ案件の確定証拠番号canonical複合キー一意、同じorgとoperationのidempotency_key一意。cross-org FKは複合FKまたはDB triggerで拒否。jsonbのIDにも認可検証を適用。
+草案snapshotのhashは原文を含むcanonical JSON serializationで計算。検索キーや画面表示上の正規化文字列をhash元にしない。更新はexpectedVersionを必須とし409で再読込/別版保存を案内。
+
+【9．技術構成・API・保存】
+React/TypeScript strict/Vite/React Router/TanStack Query/Zod。独自CSS tokens。エディタはProseMirror/Tiptap OSS coreで限定ASTのみ。PDF.jsでサーバー生成PDF表示。スマホ端末でDOCX/PDFレンダリングを完結させようとしない。
+Fastify BFF、Supabase Auth/Postgres/private Storage、Node.js render worker、Python文書検査worker、LibreOffice、ClamAV。OCRはTesseractのローカル処理、任意の外部AIサービスなし。
+monorepo：apps/web、apps/api、apps/worker、workers/documents、packages/domain、packages/template-schema、packages/japanese-text、packages/contracts、supabase/migrations、templates/demo、tests/fixtures、docs、assets。
+依存版は実装開始日に公式資料で確認・lock。SOURCE_NOTES.txtにURL/確認日/採用版/ライセンスを記録。秘密情報は.env.exampleに値を入れない。
+API共通：{data,meta:{requestId}}、error={code,message,fieldErrors,requestId}。認証cookie＋CSRF/Origin検査。GET一覧はcursor/limit<=100。ACLを適用した後で件数と候補を返す。
+GET/POST /api/offices、/api/lawyers、/api/contacts、/api/matters。PUT /:idはexpectedVersion。
+POST /api/templates/import→検査job、GET /api/templates/:id/versions、PUT /api/template-versions/:id/schema、POST /api/template-versions/:id/test、POST /api/template-versions/:id/publish/retire。
+POST /api/drafts {matterId,templateVersionId,recipientId,idempotencyKey}、GET /api/drafts/:id、PUT /api/drafts/:id/revisions {expectedVersion,snapshot,ast}、POST /api/drafts/:id/lease、POST /api/drafts/:id/refresh-candidates、POST /api/drafts/:id/render。
+POST /api/batches、GET /api/batches/:id、POST /api/batch-items/:id/retry。POST /api/reviews、POST /api/reviews/:id/decision。
+POST /api/uploads/init、POST /api/uploads/:id/finalize、GET /api/files/:id/content（毎回ACL/no-store）。POST/PUT /api/evidence。POST /api/packets、POST /api/packets/:id/render、POST /api/dispatch-records、POST /api/dispatch-records/:id/verify。
+GET /api/jobs/:id、POST /api/exports、GET /api/outputs/:id/download?mode=draft|final、GET /api/audit。状態遷移/権限はserverで再検証。clientのrole/actorIdを信頼しない。
+HTTP401未認証、403許可なし、404存在秘匿、409版競合、413容量、415形式、422入力不備、429制限を使い分ける。内部stacktraceは返さない。
+job claim=FOR UPDATE SKIP LOCKED、lease120秒/heartbeat30秒、最大3回実行、失敗後30秒/120秒で再試行、3回失敗でfailed。retry可能なのはtimeout等、書式エラーは自動再試行せず修正導線。input_hash＋operation＋scopeで重複生成を防ぐ。
+ブラウザはサーバーを正本とする。700ms debounce autosave、未保存の表示、通信断時の離脱警告。機密データをIndexedDB/localStorageに永続保存しない。edit lease90秒/30秒heartbeat、強制引継ぎに理由。本文の同時編集は行わない。
+
+【10．UI数値・新ブランド】
+機能説明：法律事務所の書類作成・訴訟準備。
+背景 #F3F0F5、surface/document #FFFFFF、本文 #302936、primary #59385F、selected #E5DBEB、muted #655D6C、decorativeLine #D5CEDB、controlBorder #817588、focus #754782、success #28604A、warning #805400、error #A22F46。
+primary白文字。hover primary #492E50、active #3D2643。通常面hover #EDE6F1、selectedは色＋2px下線＋aria-selected。disabled背景#E3DFE6/文字#706877、理由を併記。focus-visible3px/offset3px、暗背景では白い内側輪郭併用。
+本文Noto Sans JP 400/500、16px/line-height1.65/letter-spacing0。補助13px/1.5。和文見出しNoto Serif JP600、PC30px/1.4/0.02em、mobile24px/1.45。ロゴBricolage Grotesque600、英見出し48px/1.05/-0.03em、mobile30px。日本語原文palt/pkna/fwid無効、数字はUIのみtabular-nums。
+spacing4,8,12,16,24,32,48,64,96。max-container1440px、PC左右32px、tablet24px、mobile16px。12列/gap24px。PC作成画面は入力5列・書面7列の2面、一般画面は文書の帯と見出しで構成。
+breakpoint 0～767mobile、768～1199tablet、1200以上desktop。320px対応。header64px/モバイル56px、bottom-nav64px+safe-area。button/input48px、small button44px、textarea最低160px、icon20px/補助16px、タッチ領域44px以上。
+border1px、区切り2px、radius4px入力/ボタン、dialog8px、その他0。shadow通常なし、dialogのみ0 12px 40px #30293626。
+loading=「3/8書類を作成中」＋中止可能状態/再試行表示、不明な残り秒数を捏造しない。empty=次の作成操作、success=何が作成されたかと開く、warning=具体的項目と確認、error=原因/直す場所/入力保持。色だけで状態を示さない。
+低彩度プラムを操作部に限定、書面は白地・黒文字。旧マスタード/生成り/ピンクベージュの配色を継承しない。KPIカード群、左サイドバー＋中央一覧＋右詳細の3カラム、ガラス/発光/抽象球体は禁止。
+
+【11．主要画面・導線】
+全画面共通：最重要操作は1つを主ボタン。認証切れは再ログイン後に権限再確認、未保存状態を説明。422は入力項目に戻り値を保持、409は版対比から再読込/別版、job失敗はjob画面へ。権限なしはデータの存在を漏らさず戻る。
+S01 /create：目的=書類作成開始。優先=「書類を作る」→よく使う書式→最近の下書き→確認待ち。PCは大見出しと非均等な帯、mobile縦。主操作=新規作成→S04。空は初期設定へ。
+S02 /setup：目的=事務所・弁護士設定。優先=差出人必須情報→所内ユーザー→確認。PC最大800pxフォーム、mobile段階式。主操作=保存。未入力は項目へ戻す。
+S03 /templates：目的=書式選択/管理。優先=種類→用途/承認状態→適用範囲。PCカテゴリ横タブと行リスト、mobile検索＋縦一覧。主操作=この書式で作成→S04、管理者は登録→S10。未公開を正式用に選べない。
+S04 /drafts/new：目的=案件/宛先特定。優先=案件→書式→宛先→不足。PC同一フォーム、mobile段階式。主操作=入力へ→S05。同姓同名候補は所属確認。案件未登録は必要項目だけ登録して戻る。
+S05 /drafts/:id/edit：目的=自動入力確認と本文編集。優先=保存状態→不足→宛先/差出人→本文。PC5:7の入力/PDFプレビュー、mobile「入力/本文/プレビュー」切替。主操作=確認へ→S06。renderは明示ボタンか保存後の遅延実行で、未保存本文と旧プレビューを区別する。
+S06 /drafts/:id/check：目的=形式検査。優先=停止エラー→確認警告→最終プレビュー。PC上部チェック帯と文書、mobile項目タップで入力へ。主操作=レビュー依頼→S07。エラー時は関連block/fieldへ戻す。
+S07 /reviews/:id：目的=弁護士確認。優先=版/宛先→差分→警告→本文と最終PDF。PC左右旧新、mobileタブ。主操作=承認または理由付き差戻し。hash失効は再生成へ。
+S08 /documents：目的=作成済み文書検索。優先=案件/種類/状態→更新順の文書行。PC行リスト、mobile帯。主操作=開く→S05またはS09。検索0は条件解除、空は作成へ。
+S09 /documents/:id/output：目的=承認版取得。優先=版/承認者/宛先→DOCX/PDF→送付記録。PC並列ボタン、mobile縦。主操作=取得。未承認は草案取得とレビューを明確に分ける。
+S10 /templates/import：目的=独自DOCX登録。優先=対応範囲→ファイル→検査→タグ対応付け→試作。PC設定/試作PDF2面、mobile工程別。主操作=試作。未対応要素は位置/理由/修正手順を表示。
+S11 /templates/:id/versions/:v：目的=書式版公開。優先=用途/出典→フィールド→サンプル試験→承認者。PC詳細セクション、mobile縦。主操作=公開申請/承認。既公開編集は複製して新しい版。
+S12 /phrases：目的=所内文例管理。優先=用途→本文→承認状態。PCリストから全文編集、mobile独立編集画面。主操作=版保存/承認依頼。旧文例を使う草案には更新候補のみ。
+S13 /batches/new・/:id：目的=一括作成。優先=案件→書式→宛先→成果物一覧→エラー。PC表、mobile書類別の帯。主操作=生成。部分失敗は失敗分のみ再試行、他宛先混入を警告。
+S14 /matters・/:id：目的=差込元の事件情報。優先=当事者/立場→代理人→裁判所/事件番号→受任範囲→書類。PCセクション、mobile縦。主操作=この案件で作成→S04。変更で過去書面が変わらない旨表示。
+S15 /contacts：目的=連絡先登録/検索。優先=氏名→所属→住所→確認日。PC検索と結果行、mobile同順。主操作=登録/選択。類似名は提案のみ、merge禁止。
+S16 /matters/:id/evidence：目的=証拠台帳。優先=番号→原資料→標目/作成者/日付→立証趣旨。PC表と独立原本閲覧、mobile項目ごと。主操作=証拠説明書作成。番号競合は再選択。
+S17 /packets/new・/:id：目的=訴訟提出準備。優先=提出先/適用profile→対象書類→添付→検査/レビュー。PC横工程、mobile段階式。主操作=パック出力。未完成項目へリンク。
+S18 /dispatches/:id：目的=送付/提出の手動記録。優先=出した版→宛先/方法/日時→受付情報。PCフォーム、mobile同順。主操作=記録/他担当確認。出力済みと提出済みを区別。
+S19 /jobs/:id：目的=生成進捗と失敗復帰。優先=結果/件数→失敗理由→再試行。PC一覧、mobile縦。主操作=成果物を開く/失敗を直す。cancelは未開始の子だけ停止、処理中は安全なcheckpointで停止。
+S20 /settings・/audit：目的=権限/書式設定/バックアップ/監査。PC項目一覧→個別フォーム、mobile同階層。主操作=保存。権限付与は担当lawyer承認。監査に未権限本文を出さない。
+navは「作成・書類・案件・書式」。設定/確認待ちはヘッダーまたは作成画面の専用導線。通知数の誇張表示は不要。
+
+【12．インポート・エクスポート】
+連絡先CSV：external_id,type,name_raw,kana,organization_name_raw,address_raw,postcode_raw,phone_raw,email_raw。
+案件CSV：external_id,title_raw,case_number_raw,court_raw,status,scope_raw。関係当事者は別CSV matter_external_id,contact_external_id,role。人物を名前だけで結合しない。
+UTF-8 BOM有無/CP932を選択し20行preview、全行検査後transaction commit。引用符内カンマ/改行をRFC4180対応。encoding失敗は置換せずエラー。1行のエラーでbatch全体を止める。同一external_id異内容は競合。未登録外部ID参照も止める。
+export：DOCX/PDF、証拠台帳CSV、監査CSV、案件JSON＋添付ZIP、管理者向け全量バックアップ。schemaVersion=2、原文と関係IDとhashを含む。復元は空環境限定。CSV式注入対策を適用し、原文完全保存はJSON/TXTで提供。
+ZIP名は安全な連番＋短い表示名、元ファイル名との対応はmanifest。パストラバーサル、重複entry、巨大展開を拒否。添付とDBの片方だけを復元して完了扱いにしない。
+
+【13．Windows 11からiPhone PWAまで】
+Git、Node.js現行LTS、Docker Desktop/WSL2、Supabase CLIを公式手順で導入。Python文書処理はコンテナ化しWindowsとの版差を減らす。Windows Wordは販売前のDOCX確認に使う。開発時の有料契約は勝手に行わない。
+PowerShell手順をREADME.txtへ：git clone <利用者のrepo>→cd→npm ci→.env.exampleをコピー→npx supabase start→npx supabase db reset→docker compose up -d scanner document-worker→npm run dev。実際に動くscripts/composeを納品する。
+標準web5173/api3001。同一originの/api proxy、workerのinternal portsは外部非公開。seedに架空の事務所2つ、lawyerA/B、staff、別案件barrier、同姓同名代理人、20書式のデモを用意。パスワードは初期化時生成、公開repoへ固定本番値を入れない。
+必須scripts：dev、build、lint、typecheck、test、test:db、test:e2e、test:unicode、test:templates、test:export、test:security。READMEは各scriptの期待結果まで記述。
+iPhone利用はHTTPS配信が必要。WindowsのlocalhostとiPhoneのlocalhostは別物。利用者管理下の検証環境へweb/APIを同一origin配置し、Auth redirect、TLS、cookie、常駐worker、DB/Storage接続を設定する。最初は架空データのみ。デプロイ先未指定ならDocker Compose＋reverse proxy構成を完成させ、必要な環境変数と残作業を明記。資格情報不在で本番公開済みとしない。
+manifest：name/short_name=RayLaw、start_url=/create、scope=/、display=standalone、theme_color=#59385F、background_color=#F3F0F5、icons192/512/maskable512、apple-touch-icon180。
+Safari→HTTPS URL→ログイン/MFA→共有からホーム画面追加→PWA起動→受任通知作成→PDF/DOCX取得まで実機検証。safe-area、ソフトキーボード、320/375/390/430px、ファイル選択、Safariダウンロード/共有を確認。Web Share API不可ならdownloadへ。
+PWA cacheは静的shell/font/iconのみ。機密画面・API・原本・出力はnetwork-only/no-store。offlineは再接続案内のみ。MFA画面とログアウト後に過去の文書を表示しない。Service Worker更新は編集中に強制reloadせず保存後に適用。
+
+【14．ブランド素材と依存ファイル】
+DELIVERY_ROOTはこのTXTのあるフォルダー。assets/logo_horizontal.svg、assets/logo_mark.svgをロゴ正本とする。assets/brand_board.pngはv2のブランド見本。assets/pwa_icon_192.png、pwa_icon_512.png、pwa_icon_maskable_512.png、apple_touch_icon_180.png、favicon_32.pngを利用。PNG画像の画面貼付で実装したことにしない。
+素材が無い場合も実装を止めない。テキストRayLawの仮ロゴを明示し、HANDOFFへブランド正本未提供と記録する。ロゴ形状を勝手に別案で確定しない。
+フォントはBricolage Grotesque、Noto Sans JP、Noto Serif JPの公式配布から使用権を確認して同梱。外部CDNへ毎回通信しない。assets/fontsとlicensesへ保存。未収録の異体字は勝手に置換しない。
+同梱のassets/design_tokens.json、assets/icons/*.svg、PWAアイコンを使用し、不足する機能アイコンのみ追加する。書類/差込/確認/出力/宛先/書式/原本/証拠/履歴のアイコンは同一線幅2px/24viewBox、20px表示、accessible name必須。
+
+【15．実装順序と検証ゲート】
+Phase0：本書を要件一覧・ER図・権限表・状態遷移・脅威モデルにする。事務所→案件→受任通知→DOCX→PDFという縦断1本を最初の到達点に設定。
+Phase1：認証/ACL/マスター/案件/原文保持＋T01受任通知/T02回答書/T08送付書の作成と出力。ここでiPhone HTTPS検証経路も作る。
+Phase2：独自DOCX取込、タグ対応、書式版公開、文例、本文AST、レビュー、外部Word編集版の再取込。
+Phase3：残り17書式、証拠台帳、一括作成、訴訟準備パック、送付記録、移行/復元。
+Phase4：全角・DOCX/PDF崩れ・越境・同時更新・復元・実機・ライセンスを確認。法務書式の所内承認と販売前監修が未実施なら未完了として列記。
+フェーズ完了ごとに実行したテスト、未検証、変更ファイル、次作業をHANDOFFへ。認証やPDFをmockで成功させて完了扱いにしない。環境不足でも可能なローカル実装とfixture試験を進める。
+
+【16．Acceptance Criteria】
+AC01 案件登録済みの受任通知で代理人を選ぶと、自事務所/宛先/依頼者/案件名が入り、同じ項目の再入力なしで草案を作れる。
+AC02 同姓同名の代理人2名を所属で識別し、別案件の代理する側を混同しない。
+AC03 回答書と答弁書が別種類で、認否や回答内容が自動選択されない。
+AC04 20書式すべてが対応schema、架空サンプル、フォーム、DOCX/PDF試験を持つ。sample_only書式で正式出力ができない。
+AC05 DOCXの段落/表/header/footerの差込、runに分割されたタグ、長文/長い氏名、単純行loopを検証。対応外要素を位置付きで拒否。
+AC06 スキーマに未定義タグ/未対応式/循環/危険キーがあれば書式公開不可。タグにXML/JS文字列を入れても実行されない。
+AC07 原文の全角/半角/異体字/IVS/空白がDB再読込とJSON/TXTでコードポイント不変。
+AC08 IME変換中Enterで送信せず、変換中autosave/変換が走らない。日本語カーソルが飛ばない。
+AC09 WordとPDFで宛先、事件番号、全角、改頁、表、署名欄を確認。字体不足を一般字への置換で通過させない。
+AC10 マスター変更が確定版を変更しない。草案へは差分選択、手入力上書きを保持する。
+AC11 元書式の新版が過去文書を書き換えない。再生成は明示した新revision。
+AC12 一括生成で宛先Aの書面へ宛先Bの情報が混入しない。100件上限と部分失敗の再試行を検証。
+AC13 未置換タグ、必須欄欠落、証拠参照切れ、番号衝突が正式出力を止める。
+AC14 staff/未割当lawyer/最終編集者の自己承認をAPIから拒否。古いhash承認は409。
+AC15 Wordで編集したDOCX再取込は別版となり、旧承認を使って正式出力できない。
+AC16 出力と送付/提出が別状態。ダウンロードで自動提出済みにならない。
+AC17 同時保存でexpectedVersion不一致を検知し、本文を黙って上書きしない。
+AC18 異なるorg/同orgの未割当案件/barrierは本文だけでなく候補数、preview、job、file、export、auditも取得不可。
+AC19 案件情報を含むユーザー書式を所内共通へ公開する前に内容確認。案件原資料の参照をテンプレートから別案件へ引き継がない。
+AC20 DOCM/マクロ/OLE/外部参照/ZIP bomb/偽MIME/暗号化PDFを拒否。scan停止はfail closed。
+AC21 CSVのCP932/UTF-8、改行/カンマ、外部ID競合、formula injection、全行rollbackを検証。
+AC22 iPhoneで書式選択→入力→本文→プレビュー→レビュー→出力まで実行。未確認なら実機済みと報告しない。
+AC23 offline/ログアウト/bfcache復帰で機密データを表示せず、APIをcacheしない。
+AC24 日次バックアップから空環境へ復元し、DB/原本/書式/出力のhashとACLが一致する。
+AC25 通常文字4.5:1、操作境界3:1、キーボード、200%zoom、スクリーンリーダー、reduced motionを検査。
+AC26 20同時利用、2,000案件、20,000文書metadataをAPI4vCPU8GB＋worker4vCPU8GB基準で計測。一覧p95目標2秒、検索3秒。1/10/100文書生成の時間/メモリ/失敗率を報告、PDF完了秒数は未実測で保証しない。
+AC27 job再送・承認再送で二重成果物/二重状態遷移が起きない。audit/outboxと業務変更が同一transaction。
+AC28 雛型本文の承認・ライセンス・適用範囲・確認日を保存。公式公開物の無断転載で20種を埋めない。
+AC29 クリーン環境でnpm ci/build/DB migration/seed/testが再現。lockfile/SBOM/ライセンス同梱、secret混入0。
+AC30 旧v1の案件記録ホーム/旧配色が残らず、/createが入口。書類作成からWord/PDF取得まで最短導線を実測し記録する。
+
+【17．納品・引継ぎ】
+ソース、DB migration/RLS、build、Docker構成、.env.example、20デモ書式とschema、fixtures、テスト報告、README.txt、Windows起動手順、iPhone手順、管理者手順、復元手順、API契約、データ辞書、SBOM/ライセンス、既知制約を納品。
+HANDOFF.txt：commit、依存版、実装済/未実装/未検証、コマンド、環境変数名のみ、書式監修状態、デモ/本番区別、実機検証結果、外部環境の残作業。未実装を「あとで対応」で隠さずAC番号へ対応させる。
+最初の利用デモは架空「青葉法律事務所」、同姓同名の「佐藤一郎」2名、売買代金案件。実在の顧客/弁護士情報を収集しない。
+料金は本書で決め打ちせず、検証版で課金SDKを作らない。法務機密を扱うため広告による無料モデルは導入しない。販売条件・監修・保守範囲は別途確定。
+
+【18．参照資料（確認日2026-10-06）】
+https://docxtemplater.com/docs/
+https://docxtemplater.com/faq/
+https://github.com/open-xml-templating/docxtemplater
+OSS coreと有料moduleの境界を確認。DOCX生成とPDFレンダリングは別機能として設計。
+https://learn.microsoft.com/en-us/office/open-xml/word/how-to-open-and-add-text-to-a-word-processing-document
+WordprocessingMLのparagraph/run/text構造。単純文字列置換でWord処理を実装しない。
+https://www.courts.go.jp/saiban/minjidejitaruka/minso_shiryou/index.html
+https://www.courts.go.jp/mito/saiban/sonota_syosiki1/index.html
+書式の種類と適用先確認の入口。実装時点で公式原文を再確認する。
+https://leala.ai/function04
+https://docs.bengo-kakumei.jp/guide/cloud/start/quick-start
+競合にも書類作成・提出準備がある。RayLawの独自性を未検証の業界初と称しない。
+
+以下に日本語・セキュリティの必須仕様を統合する。本書単体で実装可能とし、旧版TXTを追加で読ませる必要はない。
+
+【19．全角・日本語・原文保持】
+
+これは付加機能ではなくリリース必須条件。Unicodeの文字幅と法的な意味の同一性を混同しない。
+
+U01 三層保存
+原本ファイルbytes（immutable/sha256）→抽出／手動転記テキストの版→検索専用キーを別に保持。UTF-8のDB本文に入力時NFKC/NFC/trimを一律適用しない。改行・U+3000全角空白・引用の句読点・半角英数もそのまま保持。原本bytesの同一性と、エディタ内容の同一性は別のhash。
+テキスト添付は元bytes+encoding名を保存。エディタ内部は改行LFのモデルを使うが、取込原本のCRLFを保存し直さない。編集でLF化した場合は新しい派生文書として扱う。
+
+U02 検索
+デフォルト「表記ゆれを含む」、切替で「原文一致」。結果に一致理由と原文を表示。検索キーver1の規則を固定：全角A-Z/a-z/0-9だけASCIIへ、ASCII大文字を小文字へ、全角丸括弧をASCII括弧へ、U+3000をU+0020へ。半角カナ連続区間だけNFKCで全角カナへ、直後の半角濁点/半濁点を同区間として処理。この局所変換以外の全文NFKCは禁止。連続空白のまとめ・全体trimは検索キーだけで可。
+①≠1、Ⅰ≠I、㈱≠(株)、髙≠高、﨑≠崎、－≠ー≠−≠―、～≠〜、¥≠\を保持。別名辞書は明示登録して追加候補とし自動名寄せしない。波ダッシュ等を検索便利性のため同一視する拡張は初版なし。
+検索キーの一致は人/会社/事件の同一性を意味しない。唯一キーに検索キーを使わない。ACLで絞ったデータだけ検索・snippet・件数・候補を返す。offset mappingを保持し、正規化キー上の一致範囲をそのまま原文offsetへ当てない。対応が多対一なら元のgrapheme区間を広くハイライト。
+
+U03 入力とIME
+compositionstart〜compositionendの間に正規化・保存・submit・ショートカット・カーソル移動を走らせない。EnterはisComposingまたはkeyCode229時submit禁止。変換確定後にdebounce700ms保存。先頭0の事件番号は文字列。URL/emailなどASCIIを要求する欄でも変換提案を出して本人が適用、黙って書換えない。
+普通のtext inputは入力をそのまま制御、電話・金額・日付はrawとparsedを分離。全角の「１２３」は数値欄のparse候補123にできるが原入力を保持し、金額欄以外へ波及させない。inputMode numericを本文・事件番号・人名へ使わない。
+
+U04 日本語の文字境界
+JS string.lengthやsliceの単純なUTF-16単位で文字数・カーソル・切り詰めを実装しない。Intl.Segmenter(granularity:'grapheme')を利用、server ICU版を固定しgolden fixtureで差を検知。IVS、サロゲートペア、結合濁点、絵文字ZWJを分割しない。原文の選択offsetはUTF-16半開区間で保存するが境界はgraphemeに一致させる。OCR引用はpage座標を優先しtext_version_idも固定。
+制御文字・bidi override・zero widthの存在は警告表示し、保存拒否/削除を自動実行しない（NUL等DBが保持不能な文字は原本bytes保存＋テキスト化失敗を明示）。不可視文字表示モードでコードポイントを説明。空白を中点へ見せるのは画面表示のみ、出力に混ぜない。
+
+U05 校正・差分
+「原文差分」では全角/半角、空白、改行、異体字をすべて変更として表示。「表記差を畳む」は任意の閲覧モード、幅変更件数は消さない。文書の承認hashは原文ASTから作り、検索正規化後のhashで承認しない。引用された文言を校正で置換する場合は原引用と編集文を併記。
+変換ツールは選択範囲+対象種別（英数だけ/数字だけ/カナだけ）を選びbefore/after・件数→適用→undo。引用ブロック・人名・証拠番号は既定除外。全体ワンクリック整形は設けない。
+
+U06 和暦・事件番号・証拠番号
+事件番号はraw_label必須。任意の構造化フィールドcourt_label/year_era/era_year/symbol/serialを併設。parse失敗でも原文は保存、確認待ちとする。記号や番号を法律上妥当と自動認定しない。
+和暦の変換対象は明治/大正/昭和/平成/令和の西暦対応をversion付き表で定義。元年=1。元号境界日を照合し、令和元年4月30日や平成31年5月1日は不整合警告。令和元年5月1日→2019-05-01。「令和８年頃」は日付に丸めずapproximate/year precision。日時不明はnull、1970-01-01にしない。
+証拠番号はparty_symbol（甲/乙/丙/自由入力）、number_raw、branch_raw、display_labelを保存。canonical numberは全角数字をASCIIにした別値、元ラベルは維持。「甲第３号証の１」を3.1の浮動小数にしない。並替は符号順→整数番号→枝番順。提出済みラベルの改番は禁止、訂正は履歴付き別版。
+
+U07 エクスポートと組版
+業務文書は横書きA4を初版。縦書きの再現、Word任意レイアウトの無損失編集は対象外。DOCXは用途を分ける。書式取込は本書第5章のタグ方式。外部編集済み文書の取込は原本保持と別版PDFを生成し、アプリASTへ無損失で戻さない。原資料DOCXから本文を転記する際も派生原稿として差異を表示。
+文書書式profile:用紙A4縦/横、上下左右余白mm、Noto Serif JP本文12pt既定、lineHeightPt20、段落字下げ1em、見出し14pt、ページ番号下中央、横書き。これは試作用既定であり裁判所の統一規定ではない。全角スペース連打で位置合わせせずtab/indent/tableを使う。固定文字数/行数要求は検証済みprofileのみ追加可能、初版は厳密な37字×26行等を自称しない。
+CSS line-break:strict、word-break:normal、overflow-wrap:anywhereはURL等の専用runのみ。約物の禁則・孤立見出し・表のページ跨ぎ・脚注の配置をgolden PDFで確認。EastAsianWidthだけで実際の印字幅を計算せず、フォントの組版結果で確認。
+DOCXはw:rFonts eastAsiaも指定、fullwidth本文をASCIIへ変換しない。PDFは同一のDOCX snapshotをLibreOffice headless固定版+固定フォントで生成し、converter version/hashを記録。Windows Wordのページ割りと完全一致する保証はしない。最終PDFを承認対象にする。
+フォント埋込、text extraction往復、missing glyph、字化け、annotation、文書プロパティ、外部リンクをpreflight。字体未収録／PUA／IVSの未検証があればその文字のexportを止め、適切な使用権あるフォント追加または手動作成PDFの取り込みへ誘導。ユーザーが確認せず一般字体へ置換して通過させない。個別字形一致が不明なら必ず要確認。
+CP932取込はstrict decode。変換不能を「?」で置換しない。CSVは標準UTF-8 BOM、CP932出力は全セルstrict encode可の場合だけ許可。元ファイル名を表示用に保存、storage keyはUUID、ZIPのentryは安全な連番と名称対応表。丸数字・外字を消して衝突させない。
+
+U08 テスト資料
+tests/fixtures/unicode_cases.json、normalization_reference.py、unicode_fixture.txtを実装担当が作成し同梱する。未提供の旧examplesに依存しない。referenceは限定検索ルールの独立した検算用であり本番実装そのものではない。NFKC全体適用を意図的に避けているかレビュー。
+最低例：ＡＢＣ１２３/ABC123、ｶﾞ/ガ、か+結合濁点/が、①/1、Ⅰ/I、㈱/(株)、髙橋/高橋、﨑/崎、𠮷/吉、葛+IVS、全角空白、各種dash、〜/～、¥/\、令和元年境界、証拠枝番、leading zero。各原文がsave→reload→JSON/TXT exportで変わらない。PDF/DOCXは字体と文字コード双方を個別確認。
+
+
+【20．セキュリティ・運用詳細】
+20.1 認可
+adminはユーザー/基盤管理のみで事件本文の全件閲覧権を持たない。lawyer/staffともmatter_membersを必要とし、matter_barriersを優先。書式・事務所共通マスターはorg権限、案件内当事者の詳細は案件ACLを適用。共有連絡先の存在から特定事件との関係を漏らさない。
+member追加は担当lawyer承認、担当不在の引継ぎはadmin＋別lawyerの二者承認。最初の案件作成lawyerにmembershipを付与。弁護士2名以上の運用前提を設定画面に明記。退所でsession/membershipを失効し担当を引き継ぐ。最後のadmin削除は禁止。
+Postgres RLS、SQL GRANT、private Storage、BFFを重ねる。本人JWTをBFFからDBへ渡し、workerだけservice role使用。workerはjobのorg/matterを再確認。SECURITY DEFINER関数はsearch_path固定とschema-qualified参照を使う。storageキー、検索、job、preview、exportのすべてで同じ境界。
+承認と状態遷移はactorをserver sessionから決定しtransactionでversion/hash再検証。監査/outboxを同じtransactionへ。admin役割で自分をlawyerにして承認制約を迂回できる設計にしない。初期lawyer指定はオンボーディング運用責任者が行い、変更を監査・二者確認する。
+
+20.2 認証
+所内ユーザーMFA/TOTP必須。Fastify BFFがAuthと通信、ブラウザにはopaque session cookieのみ。HttpOnly/Secure/SameSite=Lax。CSRF tokenとOrigin allowlist。CORS*禁止。
+server_sessionsにcookie hash、user/org、暗号化refresh token、idle_expiry30分、absolute_expiry12時間、last_mfa_at、revoked_at。非公開schemaでブラウザSELECT不可。refreshはsession行lock。重要操作はMFA確認15分以内。
+access/refresh tokenやサービス鍵をlocalStorageに入れない。ログアウトでDBsession失効＋メモリquery cache破棄。復帰時は権限再検証まで旧画面を隠す。未保存原稿の警告を出すが、共有端末に機密原稿を恒久保存しない。
+
+20.3 ファイルと隔離処理
+原資料はPDF/DOCX/PNG/JPEG/TXT/CSV。100MB/ファイル、PDF500ページ、1job2000ページ。書式DOCXは20MB、展開後200MB/2000entries、圧縮率100倍上限。画像最大4000万pixel。parser timeout120秒/render300秒、workerメモリ2GB/CPU2、jobごと一時領域。
+magic bytes/MIME/拡張子整合、ClamAV、ZIP構造検査。DOCM、マクロ、暗号化PDF、OLE、path traversal、外部relationships、爆弾ファイルは拒否。テンプレ登録では5.2の制限を追加。raw SVG/HTMLを入力として許可しない。
+quarantine状態で保存し、scan・検査完了まで一般取得を不可にする。scanner停止は成功にしない。nonroot/network-off workerで処理、変換ソフトから外部URLを取得させない。一時ディレクトリはjob終了時に清掃。保存原本bytesはimmutable。
+OCRはローカルTesseract jpn+eng、縦書き資料のみ利用者がjpn_vert選択。抽出native textとOCR textを別版に保持。手書き・外字・印影の精度を保証しない。原本内の命令をコード/操作として扱わない。
+PDFは派生安全版でプレビューし、埋込JavaScript/添付/外部動作を実行しない。正式版出力ではコメント・内部metadata・外部参照を除去した派生物を検査。PDFを黒く覆うだけの墨消し機能は作らない。本版では独立した墨消し編集を対象外とする。
+
+20.4 書式の安全性
+他案件の実名・住所を含むDOCXを共通書式にすると情報が漏れる。タグ以外の残存文字を検出候補として提示し、確認者が全ページ確認して公開する。残存個人情報の完全自動検知を保証しない。文例にも同じ公開確認。
+sharedテンプレートの引用元に案件内ファイルIDを残さない。テンプレートの固定画像や文字列は確認対象。印影や実署名は書式としての配布対象から除外。
+出力はBFF経由で毎回ACL確認。長寿命の公開URLは作らない。直接upload URLを使うなら対象キー固定・60秒有効、scan前read不可。既に端末へ保存したファイルを遠隔で消せるとは表示しない。
+
+20.5 監査・保管
+auditはappend-only、通常roleにUPDATE/DELETE権限なし。actor/action/対象版/hash/requestID/日時を記録。汎用ログには文書全文、token、secret、相手先一覧を出さない。運用者の特権アクセスも記録し「運用者でも絶対に見られない」と称しない。
+TLS/保存時暗号化、鍵はsecret managerと環境を分離。初期は顧客専用DB/Storage/workerを推奨。保管地域・backup地域・認証メールの経路を確認し、未確認で国内完結と宣伝しない。
+日次DB+Storage+書式+fonts+renderer設定の暗号化backup、別権限、四半期の空環境復元。目標RPO24時間/RTO1営業日、保証契約とは区別。
+保存期限は固定の法定年数を仮定せず事務所が設定。案件archiveは書込み停止、理由付きreopenで編集再開。legal_holdを案件へ追加しhold中は削除禁止。自動本番削除は既定OFF。解約exportとbackup側の消去予定も管理手順へ記載。
+監視：job滞留/失敗、hash不一致、storage欠損、scanner停止、残容量、異常ログイン。外部error監視へ本文を送らない。health endpointに事務所情報/secretを出さない。
+
+20.6 リリース判定
+形式検査の成功は法律内容の正当性を保証しない。案件ごとの判断、受任、主張、期限、提出、文例適用は弁護士が確認する。規程や裁判所要件へ包括準拠と自称しない。
+実弁護士/事務職員の書式レビュー、独立したセキュリティ検査、Windows Word/最終PDF/iPhone検証、復元検証を本番運用前のゲートとする。本プロンプト納品時点では未実施。デモで機能が動くことと実データ運用可を別の状態として報告。
+
+【21．完了時の報告形式】
+1 実装した主導線と実際に出力した架空DOCX/PDFのパス
+2 AC01～30の結果一覧（成功/失敗/未検証、検証方法）
+3 20書式の技術実装状態と内容承認状態を分けた一覧
+4 Windows起動手順、iPhoneで開くURLまたは配信の残作業
+5 未実装/制約/実機未確認/法務監修未了
+6 HANDOFF.txtとコード/配布ZIPのパス
+仕様を読むだけで終了せず実装する。ただし環境・資格情報がない外部操作を実行済みと偽らない。

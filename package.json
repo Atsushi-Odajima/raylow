@@ -1,0 +1,49 @@
+{
+  "name": "raylow",
+  "version": "0.1.0",
+  "private": true,
+  "description": "RayLaw - 法律事務所の書類作成・訴訟準備アプリ (v2)",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22.12.0 <23"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n api,worker,web -c blue,magenta,green \"npm run dev -w apps/api\" \"npm run dev -w apps/worker\" \"npm run dev -w apps/web\"",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "eslint .",
+    "typecheck": "tsc -b tsconfig.build.json",
+    "db:setup": "node scripts/db-setup.mjs",
+    "db:migrate": "node scripts/db-migrate.mjs",
+    "db:seed": "node scripts/db-seed.mjs",
+    "db:reset": "node scripts/db-reset.mjs",
+    "templates:build": "python3 -I scripts/build_demo_templates.py",
+    "test": "vitest run --project unit",
+    "test:db": "vitest run --project db",
+    "test:unicode": "vitest run --project unicode && python3 -I tests/fixtures/normalization_reference.py --check tests/fixtures/unicode_cases.json",
+    "test:templates": "vitest run --project templates",
+    "test:export": "vitest run --project export",
+    "test:security": "vitest run --project security",
+    "test:e2e": "playwright test -c tests/e2e/playwright.config.ts",
+    "test:all": "npm run test && npm run test:unicode && npm run test:templates && npm run test:export && npm run test:security && npm run test:db",
+    "sbom": "node scripts/sbom.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@playwright/test": "1.63.0",
+    "@types/node": "22.20.5",
+    "@types/pg": "8.23.1",
+    "concurrently": "9.2.4",
+    "dotenv": "17.2.3",
+    "eslint": "9.39.5",
+    "globals": "17.13.0",
+    "pg": "8.23.1",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.71.1",
+    "vitest": "3.2.7"
+  }
+}

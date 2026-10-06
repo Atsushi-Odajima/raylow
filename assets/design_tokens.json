@@ -1,0 +1,22 @@
+{
+  "background": "#F3F0F5",
+  "surface": "#FFFFFF",
+  "text": "#302936",
+  "primary": "#59385F",
+  "selected": "#E5DBEB",
+  "muted": "#655D6C",
+  "line": "#D5CEDB",
+  "controlBorder": "#817588",
+  "focus": "#754782",
+  "spacing": [
+    4,
+    8,
+    12,
+    16,
+    24,
+    32,
+    48,
+    64,
+    96
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/japanese-text" },
+    { "path": "packages/template-schema" },
+    { "path": "packages/domain" },
+    { "path": "packages/contracts" },
+    { "path": "apps/api" },
+    { "path": "apps/worker" },
+    { "path": "apps/web" }
+  ]
+}
