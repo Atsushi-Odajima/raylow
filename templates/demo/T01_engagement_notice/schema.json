@@ -155,10 +155,11 @@
       "key": "acceptance_confirmed",
       "type": "boolean",
       "label": "受任確認済み",
-      "source": "input",
+      "source": "matter",
+      "sourcePath": "matter.acceptance_confirmed",
       "required": true,
-      "defaultPolicy": "none",
-      "description": "受任確認済みが正式版の条件。既定 OFF。未確認のとき書面に草案注記を出す。"
+      "defaultPolicy": "from_source",
+      "description": "案件の受任確認状態（acceptance_status=confirmed）から差し込む。受任確認済みが正式版の条件。未確認のとき書面に草案注記を出す。"
     }
   ],
   "bodyTag": "body_text",

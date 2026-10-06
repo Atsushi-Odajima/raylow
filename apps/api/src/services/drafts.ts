@@ -95,6 +95,7 @@ export function resolveSourceValue(path: string, src: SourceBundle, recipient: R
     case 'matter': {
       if (attr === 'client_name') return { value: src.clientNames.join('、'), sourceId: src.matter.id as string, sourceVersion: Number(src.matter.version) };
       if (attr === 'opponent_name') return { value: src.opponentNames.join('、'), sourceId: src.matter.id as string, sourceVersion: Number(src.matter.version) };
+      if (attr === 'acceptance_confirmed') return { value: src.matter.acceptance_status === 'confirmed' ? 'true' : 'false', sourceId: src.matter.id as string, sourceVersion: Number(src.matter.version) };
       return pick(src.matter, { title: 'title_raw', case_number: 'case_number_raw', court: 'court_raw', court_department: 'court_department_raw', scope: 'scope_raw' }, 'id', 'version');
     }
     case 'recipient': {
@@ -120,7 +121,9 @@ export function buildInitialFields(schema: TemplateFieldSchema, src: SourceBundl
   for (const f of schema.fields) {
     if (f.source !== 'input' && f.sourcePath) {
       const r = resolveSourceValue(f.sourcePath, src, recipient);
-      values[f.key] = { rawValue: r?.value ?? '', sourceId: r?.sourceId ?? null, sourceVersion: r?.sourceVersion ?? null, manuallyOverridden: false };
+      // boolean 型の差込元（例: matter.acceptance_confirmed）は 'true'/'false' 文字列を boolean に戻す
+      const raw: unknown = f.type === 'boolean' ? r?.value === 'true' : (r?.value ?? '');
+      values[f.key] = { rawValue: raw, sourceId: r?.sourceId ?? null, sourceVersion: r?.sourceVersion ?? null, manuallyOverridden: false };
       continue;
     }
     let raw: unknown = '';
@@ -141,7 +144,7 @@ export function computeRefreshCandidates(schema: TemplateFieldSchema, current: F
     const r = resolveSourceValue(f.sourcePath, src, recipient);
     if (!r) continue;
     const cur = current[f.key];
-    const curVal = cur ? String(cur.rawValue ?? '') : '';
+    const curVal = cur ? (f.type === 'boolean' ? String(cur.rawValue === true) : String(cur.rawValue ?? '')) : '';
     if (curVal === r.value) continue;
     out.push({ fieldKey: f.key, label: f.label, currentValue: curVal, newValue: r.value, sourceKind: f.sourcePath.split('.')[0] as RefreshCandidate['sourceKind'], sourceId: r.sourceId, sourceVersion: r.sourceVersion, manuallyOverridden: cur?.manuallyOverridden === true });
   }

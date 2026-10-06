@@ -205,9 +205,11 @@ export async function draftRoutes(app: FastifyInstance): Promise<void> {
       const recipient = buildRecipientSnapshot(cur.snapshot.recipient.type, src.recipient, src.honorificSettings, cur.snapshot.recipient.confirmedDirectToOpponent);
       const cands = computeRefreshCandidates(schema, cur.snapshot.fields, src, recipient);
       const fields = { ...cur.snapshot.fields };
+      const specByKey = new Map(schema.fields.map((f) => [f.key, f] as const));
       for (const c of cands) {
         if (!body.fieldKeys.includes(c.fieldKey)) continue;
-        fields[c.fieldKey] = { rawValue: c.newValue, sourceId: c.sourceId, sourceVersion: c.sourceVersion, manuallyOverridden: false };
+        const isBool = specByKey.get(c.fieldKey)?.type === 'boolean';
+        fields[c.fieldKey] = { rawValue: isBool ? c.newValue === 'true' : c.newValue, sourceId: c.sourceId, sourceVersion: c.sourceVersion, manuallyOverridden: false };
       }
       const snapshot: DraftSnapshot = { ...cur.snapshot, fields, recipient: body.fieldKeys.some((k) => k.startsWith('recipient')) ? recipient : cur.snapshot.recipient, sources: { ...cur.snapshot.sources, officeProfileId: (src.office?.id as string) ?? null, officeProfileRevision: src.office ? Number(src.office.revision) : null, matterVersion: Number(src.matter.version), lawyerVersion: src.lawyer ? Number(src.lawyer.version) : null } };
       const rev = await insertRevision(tx, actor, draft, cur.templateVersionId, snapshot, cur.ast, cur.id);

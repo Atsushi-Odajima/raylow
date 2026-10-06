@@ -685,7 +685,7 @@ def make_templates() -> list[TemplateDef]:
         common_letter_fields(
             src("engagement_scope", "matter", "matter.scope", "受任範囲", "multiline", required=True),
             inp("contact_instruction", "今後の連絡先・連絡方法", "multiline"),
-            inp("acceptance_confirmed", "受任確認済み", "boolean", required=True, description="受任確認済みが正式版の条件。既定 OFF。未確認のとき書面に草案注記を出す。"),
+            src("acceptance_confirmed", "matter", "matter.acceptance_confirmed", "受任確認済み", "boolean", required=True, description="案件の受任確認状態（acceptance_status=confirmed）から差し込む。受任確認済みが正式版の条件。未確認のとき書面に草案注記を出す。"),
         ),
         attachments=True, build=b01,
         values=common_letter_values(AGENT_A, "受任のご通知（サンプル）", {
