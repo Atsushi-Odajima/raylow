@@ -71,7 +71,7 @@
 | R-057 | T14 書面番号は案件内で衝突検査 | §4 | 実装済 | `apps/api/src/services/draftDetail.ts` `buildPreflight`（`brief_number_conflict`） |
 | R-058 | T16/T17 は同一スキーマにしない | §4 | 実装済 | `templates/demo/T16_*/schema.json`（`evidence_rows`）と `T17_*/schema.json`（`electronic_evidence_rows`） |
 | R-059 | T18 選択手続/裁判所への適用を確認 | §4 | 実装済 | `templates/demo/T18_*`（`applicability_confirmed`） |
-| R-060 | 20 種すべてに定義・入力フォーム・架空デモ DOCX・出力経路・fixture | §4 | 一部 | `templates/demo/*`（schema / docx / sample_values / ast_sample）。`tests/templates/` の自動試験は未作成（docs/testing.md） |
+| R-060 | 20 種すべてに定義・入力フォーム・架空デモ DOCX・出力経路・fixture | §4 | 実装済 | `templates/demo/*`（schema / docx / sample_values / ast_sample）。`tests/templates/render.templates.test.ts` で 20 書式の検査・DOCX/PDF 生成・フォント埋込を自動検証（44 tests pass） |
 | R-061 | 初期書式は sample_only、草案に「サンプル・要確認」表示、弁護士承認後に正式利用 | §4 | 実装済 | `template_versions.sample_only`, `apps/worker/src/jobs/render.ts` `statusLabel`, `apps/api/src/routes/templates.ts`（publish `sampleOnly:false` は active lawyer のみ） |
 | R-062 | 承認者名をコードに固定しない | §4 | 実装済 | publish は `actor.userId` を `approved_by` に記録 |
 | R-063 | 裁判所公開書式使用時は出典・適用範囲・確認日・利用条件を記録 | §4 | 実装済 | `template_versions.{source_url,checked_at,license_note,applicability,provenance}`。デモは公開書式を使用していない |
@@ -81,7 +81,7 @@
 | ID | 要件 | 出典 | 実装状態 | 実装箇所 |
 |---|---|---|---|---|
 | R-070 | Docxtemplater OSS core + PizZip、PDF は別の LibreOffice headless | §5.1 | 実装済 | `apps/worker/src/render/docx.ts`（docxtemplater 3.71.0 / pizzip 3.3.0）, `render/pdf.ts` |
-| R-071 | ライセンス・版の確認と lockfile 固定、有料 module を導入しない | §5.1 | 一部 | `package-lock.json`, `.npmrc save-exact`, `docs/sbom/`（`scripts/sbom.mjs`）。`SOURCE_NOTES.txt` は未作成 |
+| R-071 | ライセンス・版の確認と lockfile 固定、有料 module を導入しない | §5.1 | 一部 | `package-lock.json`, `.npmrc save-exact`, `docs/sbom/`（`scripts/sbom.mjs`）、`SOURCE_NOTES.txt`（URL/確認日/採用版/ライセンス） |
 | R-072 | 新規デモ DOCX は python-docx | §5.1 | 実装済 | `scripts/build_demo_templates.py` |
 | R-073 | DOCX + schema.json + provenance.json を一組にし DB へ版固定 | §5.1 | 実装済 | `template_versions.{docx_file_id,docx_sha256,field_schema,provenance}` |
 | R-074 | 任意式・JS 実行・eval・raw XML 挿入禁止 | §5.1 | 実装済 | `render/docx.ts` parser を固定（allowlist キーのみ）、`inspect_docx.py` `expression_not_allowed` |
@@ -155,7 +155,7 @@
 | R-147 | ClamAV | §9, §20.3 | 未検証 | `apps/worker/src/jobs/scan.ts` `clamdScan`（INSTREAM）。clamd 無しは fail closed |
 | R-148 | OCR は Tesseract ローカル | §9, §20.3 | 未実装 | `file_versions.kind` に `ocr_text` 値はあるが処理コードなし（`workers/documents/README.md`） |
 | R-149 | monorepo 構成（apps/web, apps/api, apps/worker, workers/documents, packages/*, supabase/migrations, templates/demo, tests/fixtures, docs, assets） | §9 | 実装済 | リポジトリ構成 |
-| R-150 | 依存版を lock、SOURCE_NOTES.txt に URL/確認日/採用版/ライセンス | §9 | 一部 | `package-lock.json`, `docs/sbom/`。`SOURCE_NOTES.txt` 未作成 |
+| R-150 | 依存版を lock、SOURCE_NOTES.txt に URL/確認日/採用版/ライセンス | §9 | 実装済 | `package-lock.json`, `docs/sbom/`, `SOURCE_NOTES.txt` |
 | R-151 | .env.example に値を入れない | §9 | 実装済 | `.env.example` |
 | R-152 | API 共通 {data,meta:{requestId}} / error={code,message,fieldErrors,requestId} | §9 | 実装済 | `apps/api/src/lib/reply.ts`, `apps/api/src/app.ts` setErrorHandler, `packages/contracts/src/common.ts` |
 | R-153 | 認証 cookie + CSRF/Origin 検査 | §9, §20.2 | 実装済 | `apps/api/src/plugins/auth.ts` |
@@ -210,16 +210,16 @@
 
 | ID | 要件 | 出典 | 実装状態 | 実装箇所 |
 |---|---|---|---|---|
-| R-210 | Git/Node LTS/Docker Desktop/WSL2/Supabase CLI 導入手順 | §13 | 未実装 | `README.md` は見出しのみ。`README.txt` なし |
-| R-211 | Python 文書処理のコンテナ化 | §13 | 未実装 | Dockerfile/compose なし（`infra/` 空） |
-| R-212 | PowerShell 手順（clone→npm ci→.env→supabase start→db reset→compose up→npm run dev）と動く scripts/compose | §13 | 一部 | `scripts/db-*.mjs`, `scripts/dev-restart.sh` はあり。`docker compose` 定義と README 手順は未実装 |
+| R-210 | Git/Node LTS/Docker Desktop/WSL2/Supabase CLI 導入手順 | §13 | 実装済 | `README.txt` §2（Git/Node 22/Docker Desktop(WSL2)/Supabase CLI の導入前提と PowerShell 手順） |
+| R-211 | Python 文書処理のコンテナ化 | §13 | 一部 | `infra/docker/worker.Dockerfile`（Python + LibreOffice 同梱、nonroot、internal network）、`docker-compose.yml`。Docker デーモン不在のためビルド・起動は未検証 |
+| R-212 | PowerShell 手順（clone→npm ci→.env→supabase start→db reset→compose up→npm run dev）と動く scripts/compose | §13 | 一部 | `README.txt` §2 の手順、`scripts/db-*.mjs`、`docker-compose.yml`（scanner/document-worker/api/web）。compose の起動は未検証 |
 | R-213 | web 5173 / api 3001、同一 origin の /api proxy、worker の internal port 非公開 | §13 | 実装済 | `apps/web/vite.config.ts`, `apps/api/src/config.ts`（`API_HOST=127.0.0.1`）。worker は HTTP を listen しない |
 | R-214 | seed: 架空事務所 2、lawyerA/B、staff、別案件 barrier、同姓同名代理人、20 書式デモ | §13 | 実装済 | `apps/api/src/seed/run.ts` |
 | R-215 | パスワードは初期化時生成、固定本番値を repo に入れない | §13 | 実装済 | seed が `randomToken` で生成し `.data/seed-credentials.json`（.gitignore）へ保存 |
-| R-216 | 必須 scripts: dev/build/lint/typecheck/test/test:db/test:e2e/test:unicode/test:templates/test:export/test:security | §13 | 一部 | `package.json` に全て定義。`test:e2e` が参照する `tests/e2e/playwright.config.ts` は存在しない |
-| R-217 | README に各 script の期待結果 | §13 | 未実装 | — |
+| R-216 | 必須 scripts: dev/build/lint/typecheck/test/test:db/test:e2e/test:unicode/test:templates/test:export/test:security | §13 | 実装済 | `package.json` に全て定義。`tests/e2e/playwright.config.ts` と `*.e2e.ts` あり（docs/testing.md） |
+| R-217 | README に各 script の期待結果 | §13 | 実装済 | `README.txt` §3（各 script の期待結果） |
 | R-218 | iPhone は HTTPS 配信。同一 origin 配置、Auth redirect、TLS、cookie、常駐 worker | §13 | 未検証 | `COOKIE_SECURE` / `ALLOWED_ORIGINS` 環境変数のみ。配信環境なし |
-| R-219 | デプロイ先未指定なら Docker Compose + reverse proxy 構成 | §13 | 未実装 | `scripts/sbom.mjs` に Caddy を列挙するが compose 定義なし |
+| R-219 | デプロイ先未指定なら Docker Compose + reverse proxy 構成 | §13 | 一部 | `docker-compose.yml` + `infra/caddy/Caddyfile`（TLS 自動取得、/api proxy、セキュリティヘッダ）。起動は未検証 |
 | R-220 | manifest: name/short_name=RayLaw, start_url=/create, scope=/, standalone, theme #59385F, background #F3F0F5, icons 192/512/maskable, apple-touch-icon 180 | §13 | 実装済 | `apps/web/public/manifest.webmanifest`, `apps/web/index.html` |
 | R-221 | iPhone 実機検証（ホーム画面追加→受任通知→PDF/DOCX） | §13 | 未検証 | — |
 | R-222 | PWA cache は静的 shell/font/icon のみ。API・原本・出力は network-only/no-store。offline は再接続案内 | §13 | 実装済 | `apps/web/public/sw.js`, `apps/web/public/offline.html`, `apps/api/src/app.ts`（`Cache-Control: no-store`） |
@@ -256,10 +256,10 @@
 | R-253 | w:rFonts eastAsia 指定、全角本文を ASCII 化しない | §19 | 実装済 | `scripts/build_demo_templates.py`（rFonts ascii/hAnsi/eastAsia/cs 明示） |
 | R-254 | PDF は同一 DOCX snapshot を LibreOffice headless 固定版 + 固定フォントで生成、converter version/hash 記録 | §19 | 実装済 | `apps/worker/src/render/{pdf,fonts}.ts`（fontconfig 固定、`sofficeVersion`）, `draft_outputs.renderer_version`, `font_manifest` |
 | R-255 | フォント埋込・text extraction 往復・missing glyph・annotation・metadata・外部リンクを preflight | §19 | 一部 | `workers/documents/pdf_fonts.py`（埋込/注釈/リンク/metadata/expect-text）。missing glyph は同梱外フォント検出による近似 |
-| R-256 | 字体未収録/PUA/IVS の未検証があれば export を止め、一般字へ置換して通過させない | §19 | 一部 | `invisible.ts` が PUA/IVS を検出するが preflight には接続されていない。フォント fallback 検出（`font_missing`）はエラー扱い |
+| R-256 | 字体未収録/PUA/IVS の未検証があれば export を止め、一般字へ置換して通過させない | §19 | 実装済 | preflight（`apps/api/src/services/drafts.ts` `scanText`）が PUA を error、IVS/SVS/制御文字を confirm として報告。フォント fallback/未埋込は worker 側で error |
 | R-257 | CP932 取込は strict decode、CSV は UTF-8 BOM 標準、CP932 出力は全セル strict encode 可の場合のみ | §19 | 実装済 | `csvImport.ts`, `export.ts` `encodeCsv`（encode→decode 往復確認） |
 | R-258 | 元ファイル名は表示用、storage key は UUID、ZIP entry は連番 + 対応表 | §19 | 実装済 | `files.original_name_raw` / `storage_key`, `packet.ts` manifest |
-| R-259 | U08 fixtures（unicode_cases.json, normalization_reference.py, unicode_fixture.txt）、save→reload→export 不変 | §19 | 一部 | `tests/fixtures/*` は同梱。往復不変を検査する自動テスト（`tests/unicode/`）は未作成 |
+| R-259 | U08 fixtures（unicode_cases.json, normalization_reference.py, unicode_fixture.txt）、save→reload→export 不変 | §19 | 実装済 | `tests/fixtures/*` 同梱、`tests/unicode/roundtrip.unicode.test.ts`（API 往復・JSON/TXT 往復・reference 検算） |
 
 ## §20 セキュリティ・運用詳細
 

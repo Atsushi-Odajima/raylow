@@ -68,7 +68,7 @@ export const DraftOutputSchema = z.object({
   fileId: UuidSchema,
   sha256: z.string(),
   rendererVersion: z.string(),
-  fontManifest: z.array(z.unknown()),
+  fontManifest: z.unknown(),
   status: z.enum(['ready', 'failed', 'superseded']),
   createdAt: TimestampSchema,
 });

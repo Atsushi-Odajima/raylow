@@ -75,7 +75,8 @@ export function PdfPreview({ src, version, staleNotice, emptyLabel = 'プレビ�
         setStatus({ kind: 'ready', pages: doc.numPages });
       } catch (err) {
         if (cancelled || (err instanceof DOMException && err.name === 'AbortError')) return;
-        const message = isApiError(err) ? err.userMessage() : 'PDF を表示できませんでした。';
+        const detail = err instanceof Error ? err.message : String(err);
+        const message = isApiError(err) ? err.userMessage() : `PDF を表示できませんでした。（${detail.slice(0, 200)}）`;
         setStatus({ kind: 'error', message });
       }
     })();

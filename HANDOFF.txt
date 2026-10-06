@@ -1,0 +1,96 @@
+RayLaw v2 HANDOFF（引継ぎ）
+============================
+作成日: 2026-10-06（開発コンテナ内）。commit: `git log -1` を参照（最終 commit は本ファイルの末尾に追記）。
+本書は「実装済 / 未実装 / 未検証」を AC 番号と対応付けて正直に記録する。「あとで対応」で隠した項目は無い。
+
+1. 依存版（SOURCE_NOTES.txt に詳細）
+----------------------------------
+Node 22.22.0 / npm 10.9.4 / TypeScript 5.9.3 / Vite 7.3.7 / React 19.3.0 / react-router 7.18.4 / TanStack Query 5.104.1 / Zod 3.25.76 / Fastify 5.12.5 / pg 8.23.1 / docxtemplater 3.71.0（OSS core）/ pizzip 3.3.0 / otpauth 9.5.2 / pdfjs-dist 5.7.284 / vitest 3.2.7 / @playwright/test 1.63.0 / Python 3.13（lxml 6.1.3, pypdf 6.17.0, pillow 12.3.0, python-docx 1.2.0, fonttools 4.60.1）/ PostgreSQL 16.15 / LibreOffice 24.2.7.2。
+Docker: node:22.22.0-bookworm-slim, caddy:2.10.2-alpine, clamav/clamav:1.4.3（compose 定義のみ、未ビルド）。
+
+2. 実装済（主な縦断）
+--------------------
+- 事務所/弁護士/相手先登録 → 案件（当事者・代理人・受任確認・member/barrier）→ 受任通知（T01）の自動差込 → 本文 AST 編集 → DOCX 生成（docxtemplater）→ PDF（LibreOffice headless、静的 Noto フォント埋込）→ 形式検査 → レビュー依頼 → 別弁護士の承認（hash 再検証）→ 正式 DOCX/PDF 取得 → 送付記録（他担当確認）。
+- 独自 DOCX の登録 → Python 構造検査（run 分割タグ検出、対応外要素の位置付き拒否、残存個人情報候補）→ タグ対応付け/スキーマ保存 → 架空データ試作 → 3 点確認付き公開（sample_only / 所内承認版）→ 既公開版 immutable。
+- 20 書式（templates/demo）: すべて sample_only、provenance に supervised=false。技術検証（検査・DOCX/PDF・フォント埋込・文字往復）は自動テスト済み。内容承認は未実施。
+- 一括生成（20×50、100 上限、宛先別 snapshot、部分失敗の再試行、cancel）、証拠台帳（canonical 番号・一意・訂正別版）、提出パック（検査→ZIP: 連番名・manifest.json・確認一覧.txt・派生提出用 PDF）、送付/提出記録、更新候補（refresh-candidates）、外部編集版の再取込、CSV 取込/エクスポート、全量バックアップ export、pg_dump バックアップ/復元スクリプト、監査 append-only、PWA（manifest + 手書き sw.js）。
+- セキュリティ: opaque cookie + CSRF/Origin + TOTP MFA（BFF 管理、replay 防止）、RLS（本人 claims）+ GRANT + cross-org トリガ + immutable トリガ、404 による存在秘匿、magic bytes/MIME/ZIP bomb/マクロ/OLE/外部参照/PDF JS 検査、ファイル quarantine と fail closed、job dedupe/lease/retry、ログ redact。
+
+3. 未実装（AC 対応）
+------------------
+- OCR（Tesseract jpn/jpn_vert）と native text 抽出版（U01 三層保存の「抽出テキスト版」）: 未実装。file_versions.kind に値のみ定義。
+- 引用参照（source_refs）を作る UI/API、PDF ページ座標からの引用: 未実装（スキーマのみ）。
+- 担当不在時の引継ぎの二者承認（admin + 別 lawyer）、初期 lawyer 指定の二者確認: 未実装（担当 lawyer が不在になる member 削除の拒否と監査のみ）。
+- local_credentials.must_change の強制、MFA recovery code: 未実装（列のみ）。
+- LibreOffice を別コンテナへ分離する変換 RPC（§5.1）: 未実装。document-worker イメージに同梱する構成を採用（infra/README.md）。
+- 1 job 2000 ページの集計、画像/PDF ページ上限の job 単位検査: 一部（ファイル単位のみ）。
+- 文書内の長い氏名による段落伸長の検出: ヒューリスティック（40 文字超を confirm）のみ。
+- Tiptap/ProseMirror エディタ: 採用せず、段落単位の textarea ブロックエディタ（限定 AST）。
+- アラート基盤（監視通知）、保存時暗号化・secret manager 連携: 環境依存のため未実装（docs/operations.md に信号と SQL を記載）。
+- 回答書/答弁書等の「所内承認文例」の充実: 文例機能はあるが seed は 1 件のみ。
+
+4. 未検証（環境・資格情報・実機が無いもの）
+--------------------------------------
+- AC22 iPhone 実機（Safari/PWA/ホーム画面追加/共有/ダウンロード）: 未検証。Playwright の 390px エミュレーション（Chromium）のみ。
+- AC26 本番相当規模（2,000 案件/20,000 文書/4vCPU×2）: 未検証。縮小計測は docs/perf-report.md。
+- AC25 コントラスト/キーボード/200%/スクリーンリーダー/reduced motion: 自動検査・実機未実施。
+- AC29 別のクリーン環境（Windows 11）での npm ci→build→migrate→seed→test の再現: 未実施（本コンテナでは再現）。
+- Supabase local（Docker デーモン不在）、Supabase Auth プロバイダ（GoTrue password grant）、Supabase Storage（SupabaseBlobStore）: コードはあるが未検証。既定は AUTH_PROVIDER=local / BLOB_STORE=local。
+- ClamAV 実機: 未接続。CLAMD_HOST 未設定時は fail closed（scan_failed）。開発では DEV_ALLOW_UNSCANNED=true で緩和（本番禁止）。
+- Docker compose / Dockerfile / Caddy: 構文のみ。ビルド・起動・TLS 取得は未検証。
+- Windows Word での最終 DOCX 確認（AC09）: Word 無し。PDF 側のフォント埋込・文字往復のみ自動検証。
+- IME 実操作（AC08）: ブラウザ自動化では再現不可。純関数と実装のみ。
+- 法務書式の所内承認・販売前監修（AC28 の内容面）: 未実施。20 書式はすべて sample_only。
+- 独立したセキュリティ検査: 未実施。
+
+5. コマンド
+----------
+npm ci / npm run db:setup（素の Postgres）または npx supabase db reset / npm run db:seed / npm run dev / npm run build / npm run lint / npm run typecheck / npm test / npm run test:db / test:security / test:unicode / test:templates / test:export / test:e2e / node scripts/smoke.mjs / node scripts/perf.mjs / node scripts/backup.mjs [dir] / node scripts/restore.mjs <dir> / npm run sbom / python3 -I scripts/build_demo_templates.py / python3 -I scripts/build_static_fonts.py / bash scripts/dev-restart.sh（開発用）。
+テスト結果（本コンテナ）: unit 39 pass / db 23 pass / security 19 pass / unicode 6 pass + python PASS / templates 44 pass / export 10 pass / lint 0 errors / typecheck 0 errors。e2e は末尾参照。
+
+6. 環境変数名（値は書かない）
+--------------------------
+NODE_ENV, RAYLOW_PUBLIC_ORIGIN, DATABASE_URL, DATABASE_URL_APP, DATABASE_URL_SERVICE, DB_AUTHENTICATOR_PASSWORD, AUTH_PROVIDER, SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, SESSION_ENCRYPTION_KEY, ALLOWED_ORIGINS, COOKIE_SECURE, BLOB_STORE, BLOB_LOCAL_DIR, SUPABASE_STORAGE_BUCKET, API_PORT, API_HOST, WORKER_ID, SOFFICE_BIN, FONTS_DIR, PYTHON_BIN, DOCUMENT_WORKER_DIR, RENDER_TMP_DIR, CLAMD_HOST, CLAMD_PORT, DEV_ALLOW_UNSCANNED, LOG_LEVEL, WORKER_POLL_MS, RAYLOW_DOMAIN, DATABASE_URL_SERVICE_DOCKER, SEED_CREDENTIALS_PATH（テスト用）, RAYLOW_WORKER_ONESHOT（テスト用）。
+
+7. 書式監修状態
+--------------
+20 書式すべて: 技術実装=完了（schema/docx/サンプル/出力経路/fixture/自動テスト）、内容承認=未実施（sample_only=true、provenance.supervised=false、approved_by は seed 投入者としてのデモ弁護士）。正式出力に使うには、所内弁護士が内容と適用範囲を確認し、/templates/:id/versions/:v で 3 点確認のうえ sampleOnly=false で公開する必要がある。裁判所公式書式は取り込んでいない（generic profile のみ）。
+
+8. デモ / 本番の区別
+-------------------
+- seed は架空「青葉法律事務所」「港みなと法律事務所」「佐藤一郎」×2（第一法律事務所 / 佐藤総合法律事務所）「株式会社ミドリ商事」「髙橋　太郎」「﨑山建設株式会社」等。実在情報は含まない。
+- パスワード/TOTP secret は seed 実行時に生成し .data/seed-credentials.json（git 管理外）へ一度だけ出力。公開 repo に固定値は無い。
+- .env は git 管理外。.env.example に値は入れていない。
+- 本番公開は行っていない（資格情報・ドメイン無し）。
+
+9. 既知の設計判断・制約
+---------------------
+- RLS は API より緩い箇所がある（admin が matter_members/matter_barriers を書ける、template_versions_write が org メンバー全員、matters_insert が staff を含む）。API 側で担当 lawyer/MFA/役割を強制しており、DB 直接アクセスは service role/運用者に限る前提。強化は追加 migration で可能。
+- CSV 取込は先頭が = + - @ TAB CR の値を行ごと拒否する（保守的）。原文完全保存は JSON/TXT で提供。
+- upload 進行状態と import preview はメモリ保持（単一 API プロセス前提、60 秒/10 分で失効）。複数プロセスでは sticky session か共有ストアが必要。
+- pdfjs-dist 5.7 は Map.prototype.getOrInsertComputed を使うため apps/web/src/lib/polyfills.ts で補っている（Chromium 141 で確認）。
+- LibreOffice 24.2 は可変フォントを Type3 で書き出すため静的インスタンスを生成（assets/fonts/static、git 管理外、Docker build で生成）。
+- 可変フォントの静的化・docxtemplater inspect-module 用 lodash など、SOURCE_NOTES.txt に理由を記載。
+- 和暦出力は全角数字（令和８年１０月６日）。ASCII 数字が必要な場合は formatWareki の digits オプション。
+- 「同じ宛先が重複した一括生成」は 422。
+- 名称 RayLaw の商標・重複確認は未実施。
+
+10. 外部環境の残作業
+-------------------
+- 利用者管理下の検証ホスト（Docker）で `RAYLOW_DOMAIN=<domain> docker compose --profile full up -d`、.env の本番値、Supabase（または Postgres）接続、ClamAV の起動確認、iPhone 実機検証（README.txt §4）。
+- Supabase Auth を使う場合: AUTH_PROVIDER=supabase、private.identity_links に auth.users.id ↔ app_users.id を登録、GoTrue の MFA は使わず BFF の TOTP を使う（または統合を追加）。
+- 日次バックアップのスケジュール化と暗号化、別権限の保管先、四半期の空環境復元訓練。
+- 弁護士 2 名以上の運用設定、初期 admin/lawyer の指定（オンボーディング責任者）。
+- 実弁護士/事務職員による書式レビュー、独立セキュリティ検査、Windows Word 確認。
+
+11. e2e 結果（Playwright、Chromium 141、desktop 1280×900 / mobile 390×844 エミュレーション）
+-------------------------------------------------------------------------------
+| テスト | desktop-chromium | mobile-390 |
+|---|---|---|
+| manifest と service worker が配信され、API は cache されない（AC23/PWA） | pass | pass |
+| ログイン→MFA→/create→案件→書式→宛先→自動差込→本文→PDF プレビュー→形式検査（AC01/AC22 相当/AC30） | pass（login→preview→check 12.4 秒、PDF 生成 job 含む） | pass（12.3 秒） |
+| ログアウト後に bfcache 復帰しても機密画面を表示しない（AC23） | pass | pass |
+
+6 passed / 0 failed（約 40 秒）。実機 iPhone ではなく Chromium 141 の 390×844 エミュレーション。
+
+性能（縮小計測、docs/perf-report.md）: 一覧 p95 430ms（200 案件）、検索 p95 ≤120ms、ホーム p95 506ms（20 並列）。文書生成 1/10/100 件: 3.1s / 28.1s / 269.8s、失敗 0（worker 1 プロセス直列、1 文書あたり約 2.7〜3.1 秒）。本番相当規模ではない。
