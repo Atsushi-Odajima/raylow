@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "kind": "T13_answer",
+  "sampleOnly": true,
+  "note": "架空のデモ値。実在の人物・団体・事件とは無関係。監修済みではない（sample_only）。",
+  "recipient": {
+    "name": "東京地方裁判所民事第１２部",
+    "organization": "東京地方裁判所",
+    "address": "東京都千代田区霞が関一丁目１番４号",
+    "postcode": "１００－８９２０",
+    "honorific": "御中"
+  },
+  "values": {
+    "office_name": {
+      "rawValue": "青葉法律事務所"
+    },
+    "office_postcode": {
+      "rawValue": "１００－００１３"
+    },
+    "office_address": {
+      "rawValue": "東京都千代田区霞が関一丁目１番１号　青葉デモビル５階"
+    },
+    "office_phone": {
+      "rawValue": "０３－００００－０００１"
+    },
+    "office_fax": {
+      "rawValue": "０３－００００－０００２"
+    },
+    "lawyer_name": {
+      "rawValue": "青葉　花子"
+    },
+    "recipient_organization": {
+      "rawValue": "東京地方裁判所"
+    },
+    "recipient_name": {
+      "rawValue": "東京地方裁判所民事第１２部"
+    },
+    "recipient_honorific": {
+      "rawValue": "御中"
+    },
+    "matter_title": {
+      "rawValue": "売買代金請求事件（株式会社ミドリ商事）"
+    },
+    "case_number": {
+      "rawValue": "令和８年（ワ）第１２３４号"
+    },
+    "court_name": {
+      "rawValue": "東京地方裁判所"
+    },
+    "court_department": {
+      "rawValue": "民事第１２部"
+    },
+    "plaintiff_name": {
+      "rawValue": "髙﨑産業株式会社"
+    },
+    "defendant_name": {
+      "rawValue": "株式会社ミドリ商事"
+    },
+    "answer_items": {
+      "rawValue": [
+        {
+          "no": "１",
+          "text": "（サンプル・弁護士が記載）"
+        },
+        {
+          "no": "２",
+          "text": "（サンプル・弁護士が記載）"
+        }
+      ]
+    },
+    "admissions": {
+      "rawValue": [
+        {
+          "para_no": "１（１）",
+          "claim_text": "（サンプル）原告は食品卸売業等を目的とする株式会社である。",
+          "admission": "未入力",
+          "admission_note": ""
+        },
+        {
+          "para_no": "１（２）",
+          "claim_text": "（サンプル）被告は食品小売業等を目的とする株式会社である。",
+          "admission": "未入力",
+          "admission_note": ""
+        },
+        {
+          "para_no": "２",
+          "claim_text": "（サンプル）原告と被告は令和７年４月１日に売買基本契約を締結した。",
+          "admission": "未入力",
+          "admission_note": ""
+        }
+      ]
+    },
+    "evidence_refs": {
+      "rawValue": [
+        {
+          "label": "乙第１号証",
+          "title": "（サンプル）取引明細"
+        }
+      ]
+    }
+  },
+  "attachments": [
+    {
+      "name": "訴訟委任状",
+      "copies": "１通"
+    },
+    {
+      "name": "乙号証写し",
+      "copies": "各２通"
+    }
+  ],
+  "renderContext": {
+    "documentStatusLabel": "サンプル・要確認",
+    "templateVersionLabel": "T13_answer demo-r1（sample_only・監修済みではない）",
+    "issueDateIso": "2026-10-06",
+    "issueDateWareki": "令和８年１０月６日"
+  },
+  "astFile": "ast_sample.json"
+}

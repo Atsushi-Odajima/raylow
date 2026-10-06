@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "kind": "T07_agreement",
+  "sampleOnly": true,
+  "note": "架空のデモ値。実在の人物・団体・事件とは無関係。監修済みではない（sample_only）。",
+  "recipient": null,
+  "values": {
+    "matter_title": {
+      "rawValue": "売買代金請求事件（株式会社ミドリ商事）"
+    },
+    "agreement_title": {
+      "rawValue": "合意書（サンプル）"
+    },
+    "agreement_parties": {
+      "rawValue": [
+        {
+          "label": "甲",
+          "name": "株式会社ミドリ商事",
+          "address": "東京都中央区日本橋デモ町一丁目２番３号",
+          "representative": "代表取締役　緑川　太郎"
+        },
+        {
+          "label": "乙",
+          "name": "髙﨑産業株式会社",
+          "address": "埼玉県さいたま市大宮区デモ本町四丁目５番６号　髙﨑ビル２階",
+          "representative": "代表取締役　髙﨑　誠"
+        }
+      ]
+    },
+    "clauses": {
+      "rawValue": [
+        {
+          "clause_no": "第１条",
+          "clause_text": "（サンプル）甲及び乙は、本件取引に関する協議の経過を相互に確認する。"
+        },
+        {
+          "clause_no": "第２条",
+          "clause_text": "（サンプル）本合意の各条項の内容は、当事者双方が確認のうえ定める。"
+        },
+        {
+          "clause_no": "第３条",
+          "clause_text": "（サンプル）本合意に定めのない事項は、甲乙協議のうえ解決する。"
+        }
+      ]
+    },
+    "performance_terms": {
+      "rawValue": "（サンプル）各条項の履行期日・方法は、別紙により定める。"
+    },
+    "signature_date_raw": {
+      "rawValue": {
+        "raw": "令和８年１０月６日",
+        "iso": "2026-10-06",
+        "precision": "day"
+      }
+    }
+  },
+  "attachments": [],
+  "renderContext": {
+    "documentStatusLabel": "サンプル・要確認",
+    "templateVersionLabel": "T07_agreement demo-r1（sample_only・監修済みではない）",
+    "issueDateIso": "2026-10-06",
+    "issueDateWareki": "令和８年１０月６日"
+  },
+  "astFile": "ast_sample.json"
+}

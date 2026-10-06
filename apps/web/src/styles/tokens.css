@@ -1,0 +1,92 @@
+/* RayLaw v2 デザイントークン（spec §10 / assets/design_tokens.json）。UI ライブラリ・Tailwind は使わない。 */
+:root {
+  /* 色 */
+  --color-bg: #f3f0f5;
+  --color-surface: #ffffff;
+  --color-text: #302936;
+  --color-primary: #59385f;
+  --color-primary-hover: #492e50;
+  --color-primary-active: #3d2643;
+  --color-on-primary: #ffffff;
+  --color-selected: #e5dbeb;
+  --color-muted: #655d6c;
+  --color-line: #d5cedb;
+  --color-control-border: #817588;
+  --color-focus: #754782;
+  --color-success: #28604a;
+  --color-warning: #805400;
+  --color-error: #a22f46;
+  --color-surface-hover: #ede6f1;
+  --color-disabled-bg: #e3dfe6;
+  --color-disabled-text: #706877;
+  /* 書面（白地・黒文字） */
+  --color-paper: #ffffff;
+  --color-paper-text: #000000;
+
+  /* 文字 */
+  --font-body: 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic UI', 'Meiryo', sans-serif;
+  --font-heading-ja: 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+  --font-logo: 'Bricolage Grotesque', 'Noto Sans JP', sans-serif;
+  --font-size-body: 16px;
+  --line-height-body: 1.65;
+  --font-size-aux: 13px;
+  --line-height-aux: 1.5;
+  --font-size-heading-ja: 30px;
+  --line-height-heading-ja: 1.4;
+  --letter-spacing-heading-ja: 0.02em;
+  --font-size-heading-en: 48px;
+  --line-height-heading-en: 1.05;
+  --letter-spacing-heading-en: -0.03em;
+
+  /* 余白 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --space-9: 96px;
+
+  /* レイアウト */
+  --container-max: 1440px;
+  --gutter: 32px;
+  --grid-gap: 24px;
+  --header-height: 64px;
+  --bottom-nav-height: 64px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* 部品寸法 */
+  --control-height: 48px;
+  --control-height-small: 44px;
+  --textarea-min-height: 160px;
+  --icon-size: 20px;
+  --icon-size-aux: 16px;
+  --touch-min: 44px;
+
+  /* 枠線・角丸・影 */
+  --border-width: 1px;
+  --divider-width: 2px;
+  --radius-control: 4px;
+  --radius-dialog: 8px;
+  --shadow-dialog: 0 12px 40px #30293626;
+  --focus-ring: 3px solid var(--color-focus);
+  --focus-offset: 3px;
+}
+
+@media (max-width: 1199px) {
+  :root {
+    --gutter: 24px;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --gutter: 16px;
+    --header-height: 56px;
+    --font-size-heading-ja: 24px;
+    --line-height-heading-ja: 1.45;
+    --font-size-heading-en: 30px;
+  }
+}

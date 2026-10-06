@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "kind": "T17_electronic_evidence_description",
+  "sampleOnly": true,
+  "note": "架空のデモ値。実在の人物・団体・事件とは無関係。監修済みではない（sample_only）。",
+  "recipient": {
+    "name": "東京地方裁判所民事第１２部",
+    "organization": "東京地方裁判所",
+    "address": "東京都千代田区霞が関一丁目１番４号",
+    "postcode": "１００－８９２０",
+    "honorific": "御中"
+  },
+  "values": {
+    "office_name": {
+      "rawValue": "青葉法律事務所"
+    },
+    "office_postcode": {
+      "rawValue": "１００－００１３"
+    },
+    "office_address": {
+      "rawValue": "東京都千代田区霞が関一丁目１番１号　青葉デモビル５階"
+    },
+    "office_phone": {
+      "rawValue": "０３－００００－０００１"
+    },
+    "office_fax": {
+      "rawValue": "０３－００００－０００２"
+    },
+    "lawyer_name": {
+      "rawValue": "青葉　花子"
+    },
+    "recipient_organization": {
+      "rawValue": "東京地方裁判所"
+    },
+    "recipient_name": {
+      "rawValue": "東京地方裁判所民事第１２部"
+    },
+    "recipient_honorific": {
+      "rawValue": "御中"
+    },
+    "matter_title": {
+      "rawValue": "売買代金請求事件（株式会社ミドリ商事）"
+    },
+    "case_number": {
+      "rawValue": "令和８年（ワ）第１２３４号"
+    },
+    "court_name": {
+      "rawValue": "東京地方裁判所"
+    },
+    "court_department": {
+      "rawValue": "民事第１２部"
+    },
+    "submitter_position": {
+      "rawValue": "原告"
+    },
+    "format_profile": {
+      "rawValue": "generic_electronic_v1（形式確認のみ）"
+    },
+    "media_note": {
+      "rawValue": "（サンプル）ＰＤＦファイルを所定の方法で提出"
+    },
+    "electronic_evidence_rows": {
+      "rawValue": [
+        {
+          "label": "甲第１号証",
+          "title": "売買基本契約書（サンプル）",
+          "file_name": "甲０１＿売買基本契約書.pdf",
+          "file_format": "PDF",
+          "page_count": "１２",
+          "hash_note": "sha256: 0000…demo（サンプル）",
+          "proof_purpose": "（弁護士が入力・サンプル）取引条件"
+        },
+        {
+          "label": "甲第３号証の１",
+          "title": "納品書（サンプル・枝番）",
+          "file_name": "甲０３－１＿納品書.pdf",
+          "file_format": "PDF（OCRあり）",
+          "page_count": "１",
+          "hash_note": "sha256: 1111…demo（サンプル）",
+          "proof_purpose": "（弁護士が入力・サンプル）納品の事実"
+        }
+      ]
+    }
+  },
+  "attachments": [],
+  "renderContext": {
+    "documentStatusLabel": "サンプル・要確認",
+    "templateVersionLabel": "T17_electronic_evidence_description demo-r1（sample_only・監修済みではない）",
+    "issueDateIso": "2026-10-06",
+    "issueDateWareki": "令和８年１０月６日"
+  },
+  "astFile": "ast_sample.json"
+}

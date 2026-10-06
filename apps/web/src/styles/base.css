@@ -1,0 +1,246 @@
+/* 自前フォント（CDN 不使用。public/fonts に同梱、OFL） */
+@font-face {
+  font-family: 'Noto Sans JP';
+  src: url('/fonts/NotoSansJP.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Noto Serif JP';
+  src: url('/fonts/NotoSerifJP.ttf') format('truetype');
+  font-weight: 200 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  src: url('/fonts/BricolageGrotesque.ttf') format('truetype');
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  letter-spacing: 0;
+  font-weight: 400;
+  /* 日本語原文の palt/pkna/fwid は無効（字幅を変えない） */
+  font-feature-settings: 'palt' 0, 'pkna' 0, 'fwid' 0;
+  -webkit-font-smoothing: antialiased;
+  overflow-wrap: break-word;
+  line-break: strict;
+  word-break: normal;
+}
+
+#root {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, h4, p, ul, ol, dl, dd, figure {
+  margin: 0;
+}
+
+ul, ol {
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+a:hover {
+  color: var(--color-primary-hover);
+}
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+}
+
+img, svg, canvas {
+  display: block;
+  max-width: 100%;
+}
+
+:focus {
+  outline: none;
+}
+:focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+}
+/* 暗背景（primary ボタンなど）では白い内側輪郭を併用 */
+.on-dark:focus-visible,
+.btn-primary:focus-visible,
+.app-header :focus-visible {
+  outline: var(--focus-ring);
+  outline-offset: var(--focus-offset);
+  box-shadow: inset 0 0 0 2px #ffffff;
+}
+
+/* 見出し */
+.h-ja, h1, h2, h3 {
+  font-family: var(--font-heading-ja);
+  font-weight: 600;
+  letter-spacing: var(--letter-spacing-heading-ja);
+}
+h1, .h-ja {
+  font-size: var(--font-size-heading-ja);
+  line-height: var(--line-height-heading-ja);
+}
+h2 {
+  font-size: 22px;
+  line-height: 1.45;
+}
+h3 {
+  font-size: 18px;
+  line-height: 1.5;
+}
+.h-en, .brand-wordmark {
+  font-family: var(--font-logo);
+  font-weight: 600;
+  font-size: var(--font-size-heading-en);
+  line-height: var(--line-height-heading-en);
+  letter-spacing: var(--letter-spacing-heading-en);
+}
+.aux {
+  font-size: var(--font-size-aux);
+  line-height: var(--line-height-aux);
+}
+.muted {
+  color: var(--color-muted);
+}
+/* 数字は UI のみ tabular-nums（書面本文には適用しない） */
+.num, time, .table td.num, .job-progress__count {
+  font-variant-numeric: tabular-nums;
+}
+.paper, .paper * {
+  font-variant-numeric: normal;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* レイアウト */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+.grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: var(--grid-gap);
+}
+.col-5 { grid-column: span 5; }
+.col-6 { grid-column: span 6; }
+.col-7 { grid-column: span 7; }
+.col-12 { grid-column: span 12; }
+@media (max-width: 1199px) {
+  .col-5, .col-6, .col-7 { grid-column: span 12; }
+}
+
+.stack > * + * { margin-top: var(--space-4); }
+.stack-s > * + * { margin-top: var(--space-2); }
+.stack-l > * + * { margin-top: var(--space-6); }
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+}
+.row-between {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+}
+.divider {
+  border: 0;
+  border-top: var(--divider-width) solid var(--color-line);
+  margin: var(--space-5) 0;
+}
+
+/* 帯（セクション） */
+.band {
+  background: var(--color-surface);
+  border: var(--border-width) solid var(--color-line);
+  padding: var(--space-5);
+}
+.band + .band {
+  margin-top: var(--space-5);
+}
+.band__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+@media (max-width: 767px) {
+  .band { padding: var(--space-4); }
+}
+
+/* 書面（白地・黒文字） */
+.paper {
+  background: var(--color-paper);
+  color: var(--color-paper-text);
+  border: var(--border-width) solid var(--color-line);
+  padding: var(--space-6);
+  font-family: var(--font-heading-ja);
+  font-size: 15px;
+  line-height: 1.9;
+  white-space: pre-wrap;
+}
+.paper__heading { font-weight: 600; font-size: 17px; margin: var(--space-3) 0; }
+.paper__numbered { display: flex; gap: 1em; }
+.paper__numbered-label { flex: 0 0 auto; }
+.paper__evidence { text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 767px) {
+  .paper { padding: var(--space-4); }
+}
+
+/* 動きは最小。reduced motion では完全に無効 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

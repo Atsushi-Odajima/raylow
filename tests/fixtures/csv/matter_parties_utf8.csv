@@ -1,0 +1,6 @@
+matter_external_id,contact_external_id,role
+M001,C003,client
+M001,C004,opponent
+M002,C003,client
+M002,C999,opponent
+M003,C005,third_party

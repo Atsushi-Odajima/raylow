@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "blocks": [
+    {
+      "id": "b1",
+      "type": "paragraph",
+      "text": "【サンプル文】本書は RayLaw のデモ用に作成した架空の文例です。実際の事実関係・主張・法的評価は担当弁護士が確認のうえ記載してください。"
+    },
+    {
+      "id": "b2",
+      "type": "numberedParagraph",
+      "numberLabel": "（１）",
+      "text": "令和８年９月１０日、相手方代理人宛に受任通知書を送付しました（サンプル）。",
+      "level": 1
+    },
+    {
+      "id": "b3",
+      "type": "numberedParagraph",
+      "numberLabel": "（２）",
+      "text": "同月２４日、相手方代理人から回答書を受領しました。内容は現在検討中です（サンプル）。",
+      "level": 1
+    }
+  ]
+}

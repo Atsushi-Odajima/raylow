@@ -1,0 +1,6 @@
+﻿external_id,type,name_raw,kana,organization_name_raw,address_raw,postcode_raw,phone_raw,email_raw
+Q001,organization,"株式会社デモ, 商事",デモショウジ,,"東京都千代田区１－１－１
+デモビル５階",１００－０００１,０３－００００－０００１,
+Q002,person,"佐藤 ""通称"" 一郎",サトウ,,"東京都千代田区２－２－２
+デモビル６階",１００－０００２,,
+Q003,person,引用符なし,,,"住所,カンマ付き",１００－０００３,,

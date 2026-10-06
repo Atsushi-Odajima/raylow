@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "blocks": [
+    {
+      "id": "b1",
+      "type": "paragraph",
+      "text": "【サンプル文】本書は RayLaw のデモ用に作成した架空の文例です。実際の事実関係・主張・法的評価は担当弁護士が確認のうえ記載してください。"
+    },
+    {
+      "id": "b2",
+      "type": "heading",
+      "level": 2,
+      "text": "第１　本書面の目的（サンプル）"
+    },
+    {
+      "id": "b3",
+      "type": "paragraph",
+      "text": "本書面は、被告答弁書に対する原告の反論の骨子を整理するものである（サンプル）。"
+    },
+    {
+      "id": "b4",
+      "type": "heading",
+      "level": 2,
+      "text": "第２　争点に関する主張（サンプル）"
+    },
+    {
+      "id": "b5",
+      "type": "numberedParagraph",
+      "numberLabel": "１",
+      "text": "納品の事実について、原告は納品書（甲３の１・甲３の２）を提出して主張する予定である（サンプル）。",
+      "level": 1
+    },
+    {
+      "id": "b6",
+      "type": "numberedParagraph",
+      "numberLabel": "（１）",
+      "text": "納品日・数量等の具体的内容は、証拠に基づき担当弁護士が記載する（サンプル）。",
+      "level": 2
+    }
+  ]
+}

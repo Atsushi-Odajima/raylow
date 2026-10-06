@@ -1,0 +1,245 @@
+{
+  "schemaVersion": 1,
+  "kind": "T11_power_of_attorney_litigation",
+  "title": "訴訟委任状",
+  "scope": "court",
+  "recipientTypes": [
+    "court",
+    "none"
+  ],
+  "fields": [
+    {
+      "key": "office_name",
+      "type": "text",
+      "label": "自事務所名",
+      "source": "office",
+      "sourcePath": "office.name",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "office_postcode",
+      "type": "text",
+      "label": "事務所郵便番号",
+      "source": "office",
+      "sourcePath": "office.postcode",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "office_address",
+      "type": "text",
+      "label": "事務所所在地",
+      "source": "office",
+      "sourcePath": "office.address",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "office_phone",
+      "type": "text",
+      "label": "事務所電話番号",
+      "source": "office",
+      "sourcePath": "office.phone",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "office_fax",
+      "type": "text",
+      "label": "事務所ＦＡＸ番号",
+      "source": "office",
+      "sourcePath": "office.fax",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "lawyer_name",
+      "type": "text",
+      "label": "担当弁護士氏名",
+      "source": "office",
+      "sourcePath": "lawyer.name",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "recipient_organization",
+      "type": "text",
+      "label": "宛先の所属・組織",
+      "source": "recipient",
+      "sourcePath": "recipient.organization",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "recipient_name",
+      "type": "text",
+      "label": "宛名",
+      "source": "recipient",
+      "sourcePath": "recipient.name",
+      "required": true,
+      "defaultPolicy": "from_source",
+      "validationRules": [
+        {
+          "rule": "noDoubleHonorific"
+        }
+      ],
+      "description": "敬称を含めない。敬称は recipient_honorific（所内設定）で付加し、二重敬称を検出する。"
+    },
+    {
+      "key": "recipient_honorific",
+      "type": "text",
+      "label": "敬称",
+      "source": "recipient",
+      "sourcePath": "recipient.honorific",
+      "required": false,
+      "defaultPolicy": "from_source",
+      "description": "人物「先生/様」、組織「御中」等を所内設定から選択。"
+    },
+    {
+      "key": "principal_name",
+      "type": "text",
+      "label": "委任者",
+      "source": "matter",
+      "sourcePath": "matter.client_name",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "principal_address",
+      "type": "text",
+      "label": "委任者住所",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none"
+    },
+    {
+      "key": "matter_title",
+      "type": "text",
+      "label": "事件名（案件名）",
+      "source": "matter",
+      "sourcePath": "matter.title",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "case_number",
+      "type": "text",
+      "label": "事件番号（原文）",
+      "source": "matter",
+      "sourcePath": "matter.case_number",
+      "required": true,
+      "defaultPolicy": "from_source",
+      "description": "先頭 0 や全角数字を含む文字列として保持する。"
+    },
+    {
+      "key": "court_name",
+      "type": "text",
+      "label": "裁判所",
+      "source": "matter",
+      "sourcePath": "matter.court",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "opponent_name",
+      "type": "text",
+      "label": "相手方",
+      "source": "matter",
+      "sourcePath": "matter.opponent_name",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "auth_counterclaim",
+      "type": "boolean",
+      "label": "特別授権：反訴の提起",
+      "source": "input",
+      "required": false,
+      "defaultPolicy": "none",
+      "description": "既定 OFF。弁護士確認必須。自動で ON にしない。",
+      "legalJudgement": true
+    },
+    {
+      "key": "auth_withdrawal",
+      "type": "boolean",
+      "label": "特別授権：訴えの取下げ",
+      "source": "input",
+      "required": false,
+      "defaultPolicy": "none",
+      "description": "既定 OFF。弁護士確認必須。自動で ON にしない。",
+      "legalJudgement": true
+    },
+    {
+      "key": "auth_settlement",
+      "type": "boolean",
+      "label": "特別授権：和解",
+      "source": "input",
+      "required": false,
+      "defaultPolicy": "none",
+      "description": "既定 OFF。弁護士確認必須。自動で ON にしない。",
+      "legalJudgement": true
+    },
+    {
+      "key": "auth_waiver_admission",
+      "type": "boolean",
+      "label": "特別授権：請求の放棄・認諾",
+      "source": "input",
+      "required": false,
+      "defaultPolicy": "none",
+      "description": "既定 OFF。弁護士確認必須。自動で ON にしない。",
+      "legalJudgement": true
+    },
+    {
+      "key": "auth_appeal",
+      "type": "boolean",
+      "label": "特別授権：控訴、上告、上告受理の申立て及びこれらの取下げ",
+      "source": "input",
+      "required": false,
+      "defaultPolicy": "none",
+      "description": "既定 OFF。弁護士確認必須。自動で ON にしない。",
+      "legalJudgement": true
+    },
+    {
+      "key": "auth_sub_delegation",
+      "type": "boolean",
+      "label": "特別授権：復代理人の選任",
+      "source": "input",
+      "required": false,
+      "defaultPolicy": "none",
+      "description": "既定 OFF。弁護士確認必須。自動で ON にしない。",
+      "legalJudgement": true
+    },
+    {
+      "key": "special_auth_other",
+      "type": "multiline",
+      "label": "特別授権：その他（自由記載）",
+      "source": "input",
+      "required": false,
+      "defaultPolicy": "none",
+      "outputFormat": "multiline",
+      "legalJudgement": true
+    },
+    {
+      "key": "poa_date_raw",
+      "type": "date",
+      "label": "委任日（原文）",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none",
+      "outputFormat": "plain",
+      "validationRules": [
+        {
+          "rule": "isoDateOrRaw"
+        }
+      ],
+      "description": "原文（raw）を保持し、そのまま差し込む。ISO 値は解析候補として別に保持する。"
+    }
+  ],
+  "bodyTag": "body_text",
+  "attachments": false,
+  "honorificKeys": [
+    "recipient_name"
+  ],
+  "notes": "特別授権の選択は既定 OFF（legalJudgement）。弁護士確認必須。委任者・受任弁護士・対象事件・権限条項。"
+}

@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "kind": "T10_retainer_agreement",
+  "title": "委任契約書",
+  "scope": "client",
+  "recipientTypes": [
+    "client"
+  ],
+  "fields": [
+    {
+      "key": "office_name",
+      "type": "text",
+      "label": "自事務所名",
+      "source": "office",
+      "sourcePath": "office.name",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "office_postcode",
+      "type": "text",
+      "label": "事務所郵便番号",
+      "source": "office",
+      "sourcePath": "office.postcode",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "office_address",
+      "type": "text",
+      "label": "事務所所在地",
+      "source": "office",
+      "sourcePath": "office.address",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "office_phone",
+      "type": "text",
+      "label": "事務所電話番号",
+      "source": "office",
+      "sourcePath": "office.phone",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "office_fax",
+      "type": "text",
+      "label": "事務所ＦＡＸ番号",
+      "source": "office",
+      "sourcePath": "office.fax",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "lawyer_name",
+      "type": "text",
+      "label": "担当弁護士氏名",
+      "source": "office",
+      "sourcePath": "lawyer.name",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "recipient_address",
+      "type": "text",
+      "label": "委任者住所",
+      "source": "recipient",
+      "sourcePath": "recipient.address",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "matter_title",
+      "type": "text",
+      "label": "案件名",
+      "source": "matter",
+      "sourcePath": "matter.title",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "client_name",
+      "type": "text",
+      "label": "委任者（依頼者）",
+      "source": "matter",
+      "sourcePath": "matter.client_name",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "delegation_scope",
+      "type": "multiline",
+      "label": "委任範囲",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none",
+      "outputFormat": "multiline"
+    },
+    {
+      "key": "fee_terms",
+      "type": "multiline",
+      "label": "報酬条件",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none",
+      "outputFormat": "multiline",
+      "description": "報酬率や法的適合性を自動保証しない。所内書式の文言を弁護士が確認する。"
+    },
+    {
+      "key": "expense_terms",
+      "type": "multiline",
+      "label": "費用",
+      "source": "input",
+      "required": false,
+      "defaultPolicy": "none",
+      "outputFormat": "multiline"
+    },
+    {
+      "key": "termination_terms",
+      "type": "multiline",
+      "label": "終了条件等",
+      "source": "input",
+      "required": false,
+      "defaultPolicy": "none",
+      "outputFormat": "multiline"
+    },
+    {
+      "key": "contract_date_raw",
+      "type": "date",
+      "label": "契約日（原文）",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none",
+      "outputFormat": "plain",
+      "validationRules": [
+        {
+          "rule": "isoDateOrRaw"
+        }
+      ],
+      "description": "原文（raw）を保持し、そのまま差し込む。ISO 値は解析候補として別に保持する。"
+    }
+  ],
+  "bodyTag": "body_text",
+  "attachments": false,
+  "honorificKeys": [],
+  "notes": "当事者・委任範囲・報酬条件・費用・終了条件の所内書式。報酬率や法的適合性を自動保証しない。"
+}

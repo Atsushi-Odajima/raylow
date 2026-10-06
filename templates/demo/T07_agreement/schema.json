@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "kind": "T07_agreement",
+  "title": "合意書",
+  "scope": "negotiation",
+  "recipientTypes": [
+    "none",
+    "opponent_agent",
+    "opponent"
+  ],
+  "fields": [
+    {
+      "key": "matter_title",
+      "type": "text",
+      "label": "案件名",
+      "source": "matter",
+      "sourcePath": "matter.title",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "agreement_title",
+      "type": "text",
+      "label": "表題",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none",
+      "maxGraphemes": 50
+    },
+    {
+      "key": "agreement_parties",
+      "type": "array",
+      "label": "当事者",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none",
+      "itemFields": [
+        {
+          "key": "label",
+          "type": "text",
+          "label": "略称（甲/乙等）",
+          "required": true,
+          "maxGraphemes": 10
+        },
+        {
+          "key": "name",
+          "type": "text",
+          "label": "氏名・名称",
+          "required": true
+        },
+        {
+          "key": "address",
+          "type": "text",
+          "label": "住所",
+          "required": false
+        },
+        {
+          "key": "representative",
+          "type": "text",
+          "label": "法人代表者",
+          "required": false
+        }
+      ],
+      "maxItems": 20
+    },
+    {
+      "key": "clauses",
+      "type": "array",
+      "label": "条項",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none",
+      "itemFields": [
+        {
+          "key": "clause_no",
+          "type": "text",
+          "label": "条番号",
+          "required": true,
+          "maxGraphemes": 20
+        },
+        {
+          "key": "clause_text",
+          "type": "multiline",
+          "label": "条項本文",
+          "required": true
+        }
+      ],
+      "maxItems": 100
+    },
+    {
+      "key": "performance_terms",
+      "type": "multiline",
+      "label": "履行条件",
+      "source": "input",
+      "required": false,
+      "defaultPolicy": "none",
+      "outputFormat": "multiline"
+    },
+    {
+      "key": "signature_date_raw",
+      "type": "date",
+      "label": "署名日（原文）",
+      "source": "input",
+      "required": false,
+      "defaultPolicy": "none",
+      "outputFormat": "plain",
+      "validationRules": [
+        {
+          "rule": "isoDateOrRaw"
+        }
+      ],
+      "description": "原文（raw）を保持し、そのまま差し込む。ISO 値は解析候補として別に保持する。"
+    }
+  ],
+  "bodyTag": "body_text",
+  "attachments": false,
+  "honorificKeys": [],
+  "notes": "当事者・条項・履行条件・署名欄。署名画像を電子署名と扱わない。宛先は任意（none 可）。"
+}

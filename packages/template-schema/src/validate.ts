@@ -274,7 +274,7 @@ export function validateFieldValues(schema: TemplateFieldSchema, values: FieldVa
   return issues;
 }
 
-export const FieldValueSchema = z
+export const FieldValueSchema: z.ZodType<FieldValue> = z
   .object({
     rawValue: z.unknown(),
     displayValue: z.string().max(50000).optional(),
@@ -282,7 +282,7 @@ export const FieldValueSchema = z
     sourceVersion: z.number().int().nullable().optional(),
     manuallyOverridden: z.boolean().optional(),
   })
-  .strict();
-export const FieldValuesSchema = z.record(z.string().refine(isSafeTagKey), FieldValueSchema);
+  .strict() as unknown as z.ZodType<FieldValue>;
+export const FieldValuesSchema: z.ZodType<FieldValues> = z.record(z.string().refine(isSafeTagKey), FieldValueSchema);
 
 export { FieldSpecSchema };

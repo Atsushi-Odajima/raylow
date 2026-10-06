@@ -22,6 +22,7 @@ export const ReviewSchema = z.object({
 export type Review = z.infer<typeof ReviewSchema>;
 
 export const ReviewCommentSchema = z.object({ id: UuidSchema, reviewId: UuidSchema, blockId: z.string().nullable(), fieldKey: z.string().nullable(), bodyRaw: z.string(), createdBy: UuidSchema.nullable(), createdByName: z.string().nullable(), resolvedAt: TimestampSchema.nullable(), createdAt: TimestampSchema });
+export type ReviewComment = z.infer<typeof ReviewCommentSchema>;
 
 export const ReviewDetailSchema = z.object({
   review: ReviewSchema,

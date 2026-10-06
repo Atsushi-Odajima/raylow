@@ -1,0 +1,8 @@
+﻿external_id,type,name_raw,kana,organization_name_raw,address_raw,postcode_raw,phone_raw,email_raw
+F001,person,=1+1,イコール,,東京都,１００－０００１,,
+F002,person,+1234,プラス,,東京都,１００－０００１,,
+F003,person,-5,マイナス,,東京都,１００－０００１,,
+F004,person,@SUM(A1:A9),アット,,東京都,１００－０００１,,
+F005,person,	=cmd|' /C calc'!A0,タブ始まり,,東京都,１００－０００１,,
+F006,organization,"=HYPERLINK(""http://example.invalid"",""click"")",ハイパーリンク,,東京都,１００－０００１,,
+F007,person,－山田（全角ハイフン始まり・式ではない）,ヤマダ,,東京都,１００－０００１,,

@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "kind": "T01_engagement_notice",
+  "title": "受任通知",
+  "scope": "negotiation",
+  "recipientTypes": [
+    "opponent_agent",
+    "opponent"
+  ],
+  "fields": [
+    {
+      "key": "office_name",
+      "type": "text",
+      "label": "自事務所名",
+      "source": "office",
+      "sourcePath": "office.name",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "office_postcode",
+      "type": "text",
+      "label": "事務所郵便番号",
+      "source": "office",
+      "sourcePath": "office.postcode",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "office_address",
+      "type": "text",
+      "label": "事務所所在地",
+      "source": "office",
+      "sourcePath": "office.address",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "office_phone",
+      "type": "text",
+      "label": "事務所電話番号",
+      "source": "office",
+      "sourcePath": "office.phone",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "office_fax",
+      "type": "text",
+      "label": "事務所ＦＡＸ番号",
+      "source": "office",
+      "sourcePath": "office.fax",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "lawyer_name",
+      "type": "text",
+      "label": "担当弁護士氏名",
+      "source": "office",
+      "sourcePath": "lawyer.name",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "recipient_organization",
+      "type": "text",
+      "label": "宛先の所属・組織",
+      "source": "recipient",
+      "sourcePath": "recipient.organization",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "recipient_name",
+      "type": "text",
+      "label": "宛名",
+      "source": "recipient",
+      "sourcePath": "recipient.name",
+      "required": true,
+      "defaultPolicy": "from_source",
+      "validationRules": [
+        {
+          "rule": "noDoubleHonorific"
+        }
+      ],
+      "description": "敬称を含めない。敬称は recipient_honorific（所内設定）で付加し、二重敬称を検出する。"
+    },
+    {
+      "key": "recipient_honorific",
+      "type": "text",
+      "label": "敬称",
+      "source": "recipient",
+      "sourcePath": "recipient.honorific",
+      "required": false,
+      "defaultPolicy": "from_source",
+      "description": "人物「先生/様」、組織「御中」等を所内設定から選択。"
+    },
+    {
+      "key": "matter_title",
+      "type": "text",
+      "label": "案件名",
+      "source": "matter",
+      "sourcePath": "matter.title",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "client_name",
+      "type": "text",
+      "label": "依頼者",
+      "source": "matter",
+      "sourcePath": "matter.client_name",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "opponent_name",
+      "type": "text",
+      "label": "相手方",
+      "source": "matter",
+      "sourcePath": "matter.opponent_name",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "subject",
+      "type": "text",
+      "label": "件名",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none",
+      "maxGraphemes": 100
+    },
+    {
+      "key": "engagement_scope",
+      "type": "multiline",
+      "label": "受任範囲",
+      "source": "matter",
+      "sourcePath": "matter.scope",
+      "required": true,
+      "defaultPolicy": "from_source",
+      "outputFormat": "multiline"
+    },
+    {
+      "key": "contact_instruction",
+      "type": "multiline",
+      "label": "今後の連絡先・連絡方法",
+      "source": "input",
+      "required": false,
+      "defaultPolicy": "none",
+      "outputFormat": "multiline"
+    },
+    {
+      "key": "acceptance_confirmed",
+      "type": "boolean",
+      "label": "受任確認済み",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none",
+      "description": "受任確認済みが正式版の条件。既定 OFF。未確認のとき書面に草案注記を出す。"
+    }
+  ],
+  "bodyTag": "body_text",
+  "attachments": true,
+  "honorificKeys": [
+    "recipient_name"
+  ],
+  "notes": "受任確認済み（acceptance_confirmed）が正式版の条件。相手方代理人は所属・住所を併記して選択し、同姓同名を氏名だけで同一人物としない。"
+}

@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "kind": "T03_inquiry_letter",
+  "sampleOnly": true,
+  "note": "架空のデモ値。実在の人物・団体・事件とは無関係。監修済みではない（sample_only）。",
+  "recipient": {
+    "name": "渡邊　﨑太郎",
+    "organization": "一般社団法人全国中小企業取引適正化推進協議会関東甲信越支部事務局",
+    "address": "東京都新宿区西新宿デモ二丁目８番１号　デモタワー３０階",
+    "postcode": "１６３－８００１",
+    "honorific": "様"
+  },
+  "values": {
+    "office_name": {
+      "rawValue": "青葉法律事務所"
+    },
+    "office_postcode": {
+      "rawValue": "１００－００１３"
+    },
+    "office_address": {
+      "rawValue": "東京都千代田区霞が関一丁目１番１号　青葉デモビル５階"
+    },
+    "office_phone": {
+      "rawValue": "０３－００００－０００１"
+    },
+    "office_fax": {
+      "rawValue": "０３－００００－０００２"
+    },
+    "lawyer_name": {
+      "rawValue": "青葉　花子"
+    },
+    "recipient_organization": {
+      "rawValue": "一般社団法人全国中小企業取引適正化推進協議会関東甲信越支部事務局"
+    },
+    "recipient_name": {
+      "rawValue": "渡邊　﨑太郎"
+    },
+    "recipient_honorific": {
+      "rawValue": "様"
+    },
+    "matter_title": {
+      "rawValue": "売買代金請求事件（株式会社ミドリ商事）"
+    },
+    "client_name": {
+      "rawValue": "株式会社ミドリ商事"
+    },
+    "opponent_name": {
+      "rawValue": "髙﨑産業株式会社"
+    },
+    "subject": {
+      "rawValue": "取引経過に関するご照会（サンプル）"
+    },
+    "inquiry_purpose": {
+      "rawValue": "（サンプル）本件売買取引の経過を確認するため、下記事項について照会いたします。"
+    },
+    "questions": {
+      "rawValue": [
+        {
+          "no": "１",
+          "question": "（サンプル）令和７年４月から同年９月までの間に、貴会が受領した資料の有無。"
+        },
+        {
+          "no": "２",
+          "question": "（サンプル）上記資料の作成者及び作成日。"
+        }
+      ]
+    },
+    "reply_due_date_raw": {
+      "rawValue": {
+        "raw": "令和８年１０月３１日",
+        "iso": "2026-10-31",
+        "precision": "day"
+      }
+    }
+  },
+  "attachments": [],
+  "renderContext": {
+    "documentStatusLabel": "サンプル・要確認",
+    "templateVersionLabel": "T03_inquiry_letter demo-r1（sample_only・監修済みではない）",
+    "issueDateIso": "2026-10-06",
+    "issueDateWareki": "令和８年１０月６日"
+  },
+  "astFile": "ast_sample.json"
+}

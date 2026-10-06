@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "kind": "T04_document_request",
+  "sampleOnly": true,
+  "note": "架空のデモ値。実在の人物・団体・事件とは無関係。監修済みではない（sample_only）。",
+  "recipient": {
+    "name": "株式会社ミドリ商事",
+    "organization": "株式会社ミドリ商事　代表取締役　緑川　太郎",
+    "address": "東京都中央区日本橋デモ町一丁目２番３号",
+    "postcode": "１０３－００２７",
+    "honorific": "御中"
+  },
+  "values": {
+    "office_name": {
+      "rawValue": "青葉法律事務所"
+    },
+    "office_postcode": {
+      "rawValue": "１００－００１３"
+    },
+    "office_address": {
+      "rawValue": "東京都千代田区霞が関一丁目１番１号　青葉デモビル５階"
+    },
+    "office_phone": {
+      "rawValue": "０３－００００－０００１"
+    },
+    "office_fax": {
+      "rawValue": "０３－００００－０００２"
+    },
+    "lawyer_name": {
+      "rawValue": "青葉　花子"
+    },
+    "recipient_organization": {
+      "rawValue": "株式会社ミドリ商事　代表取締役　緑川　太郎"
+    },
+    "recipient_name": {
+      "rawValue": "株式会社ミドリ商事"
+    },
+    "recipient_honorific": {
+      "rawValue": "御中"
+    },
+    "matter_title": {
+      "rawValue": "売買代金請求事件（株式会社ミドリ商事）"
+    },
+    "client_name": {
+      "rawValue": "株式会社ミドリ商事"
+    },
+    "opponent_name": {
+      "rawValue": "髙﨑産業株式会社"
+    },
+    "subject": {
+      "rawValue": "資料ご提出のお願い（サンプル）"
+    },
+    "requested_items": {
+      "rawValue": [
+        {
+          "no": "１",
+          "item": "売買基本契約書（写し）",
+          "period": "―"
+        },
+        {
+          "no": "２",
+          "item": "請求書・納品書（写し）",
+          "period": "令和７年４月～同年９月"
+        },
+        {
+          "no": "３",
+          "item": "入金記録（通帳写し等）",
+          "period": "令和７年４月～令和８年９月"
+        }
+      ]
+    },
+    "target_period_raw": {
+      "rawValue": "令和７年４月１日～令和８年９月３０日"
+    },
+    "submission_method": {
+      "rawValue": "郵送またはＰＤＦ（メール添付）"
+    },
+    "due_date_raw": {
+      "rawValue": {
+        "raw": "令和８年１０月２０日",
+        "iso": "2026-10-20",
+        "precision": "day"
+      }
+    }
+  },
+  "attachments": [
+    {
+      "name": "返信用封筒",
+      "copies": "１通"
+    }
+  ],
+  "renderContext": {
+    "documentStatusLabel": "サンプル・要確認",
+    "templateVersionLabel": "T04_document_request demo-r1（sample_only・監修済みではない）",
+    "issueDateIso": "2026-10-06",
+    "issueDateWareki": "令和８年１０月６日"
+  },
+  "astFile": "ast_sample.json"
+}

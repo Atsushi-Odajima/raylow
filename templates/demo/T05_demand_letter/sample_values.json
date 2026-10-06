@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "kind": "T05_demand_letter",
+  "sampleOnly": true,
+  "note": "架空のデモ値。実在の人物・団体・事件とは無関係。監修済みではない（sample_only）。",
+  "recipient": {
+    "name": "髙﨑産業株式会社",
+    "organization": "髙﨑産業株式会社　代表取締役　髙﨑　誠",
+    "address": "埼玉県さいたま市大宮区デモ本町四丁目５番６号　髙﨑ビル２階",
+    "postcode": "３３０－０８４６",
+    "honorific": "御中"
+  },
+  "values": {
+    "office_name": {
+      "rawValue": "青葉法律事務所"
+    },
+    "office_postcode": {
+      "rawValue": "１００－００１３"
+    },
+    "office_address": {
+      "rawValue": "東京都千代田区霞が関一丁目１番１号　青葉デモビル５階"
+    },
+    "office_phone": {
+      "rawValue": "０３－００００－０００１"
+    },
+    "office_fax": {
+      "rawValue": "０３－００００－０００２"
+    },
+    "lawyer_name": {
+      "rawValue": "青葉　花子"
+    },
+    "recipient_organization": {
+      "rawValue": "髙﨑産業株式会社　代表取締役　髙﨑　誠"
+    },
+    "recipient_name": {
+      "rawValue": "髙﨑産業株式会社"
+    },
+    "recipient_honorific": {
+      "rawValue": "御中"
+    },
+    "matter_title": {
+      "rawValue": "売買代金請求事件（株式会社ミドリ商事）"
+    },
+    "client_name": {
+      "rawValue": "株式会社ミドリ商事"
+    },
+    "opponent_name": {
+      "rawValue": "髙﨑産業株式会社"
+    },
+    "subject": {
+      "rawValue": "売買代金のお支払いの催告（サンプル）"
+    },
+    "claim_description": {
+      "rawValue": "（サンプル）令和７年４月１日付売買基本契約に基づく商品代金のお支払い。"
+    },
+    "claim_amount": {
+      "rawValue": {
+        "raw": "金３，３００，０００円",
+        "decimal": "3300000"
+      }
+    },
+    "claim_basis_ref": {
+      "rawValue": "（サンプル）売買基本契約書第３条、令和７年８月３１日付請求書（№０１２）"
+    },
+    "payment_deadline_raw": {
+      "rawValue": {
+        "raw": "令和８年１０月３１日",
+        "iso": "2026-10-31",
+        "precision": "day"
+      }
+    },
+    "payment_destination": {
+      "rawValue": "（サンプル）○○銀行○○支店　普通　１２３４５６７　カ）ミドリショウジ"
+    }
+  },
+  "attachments": [],
+  "renderContext": {
+    "documentStatusLabel": "サンプル・要確認",
+    "templateVersionLabel": "T05_demand_letter demo-r1（sample_only・監修済みではない）",
+    "issueDateIso": "2026-10-06",
+    "issueDateWareki": "令和８年１０月６日"
+  },
+  "astFile": "ast_sample.json"
+}

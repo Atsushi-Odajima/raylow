@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "kind": "T06_settlement_proposal",
+  "sampleOnly": true,
+  "note": "架空のデモ値。実在の人物・団体・事件とは無関係。監修済みではない（sample_only）。",
+  "recipient": {
+    "name": "佐藤　一郎",
+    "organization": "さくら総合法律事務所",
+    "address": "東京都港区虎ノ門二丁目２番２号　虎ノ門デモビル３階",
+    "postcode": "１０５－０００１",
+    "honorific": "先生"
+  },
+  "values": {
+    "office_name": {
+      "rawValue": "青葉法律事務所"
+    },
+    "office_postcode": {
+      "rawValue": "１００－００１３"
+    },
+    "office_address": {
+      "rawValue": "東京都千代田区霞が関一丁目１番１号　青葉デモビル５階"
+    },
+    "office_phone": {
+      "rawValue": "０３－００００－０００１"
+    },
+    "office_fax": {
+      "rawValue": "０３－００００－０００２"
+    },
+    "lawyer_name": {
+      "rawValue": "青葉　花子"
+    },
+    "recipient_organization": {
+      "rawValue": "さくら総合法律事務所"
+    },
+    "recipient_name": {
+      "rawValue": "佐藤　一郎"
+    },
+    "recipient_honorific": {
+      "rawValue": "先生"
+    },
+    "matter_title": {
+      "rawValue": "売買代金請求事件（株式会社ミドリ商事）"
+    },
+    "client_name": {
+      "rawValue": "株式会社ミドリ商事"
+    },
+    "opponent_name": {
+      "rawValue": "髙﨑産業株式会社"
+    },
+    "subject": {
+      "rawValue": "和解のご提案（サンプル）"
+    },
+    "proposal_terms": {
+      "rawValue": [
+        {
+          "no": "１",
+          "term": "（サンプル）解決金の額および支払方法について協議する。"
+        },
+        {
+          "no": "２",
+          "term": "（サンプル）本件に関する今後の取引条件について別途協議する。"
+        }
+      ]
+    },
+    "payment_terms": {
+      "rawValue": "（サンプル）支払期日・振込先は合意成立後に別途定める。"
+    },
+    "reply_due_date_raw": {
+      "rawValue": {
+        "raw": "令和８年１１月１４日",
+        "iso": "2026-11-14",
+        "precision": "day"
+      }
+    }
+  },
+  "attachments": [
+    {
+      "name": "和解案（たたき台）",
+      "copies": "１通"
+    }
+  ],
+  "renderContext": {
+    "documentStatusLabel": "サンプル・要確認",
+    "templateVersionLabel": "T06_settlement_proposal demo-r1（sample_only・監修済みではない）",
+    "issueDateIso": "2026-10-06",
+    "issueDateWareki": "令和８年１０月６日"
+  },
+  "astFile": "ast_sample.json"
+}

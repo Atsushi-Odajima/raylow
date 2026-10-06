@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "kind": "T10_retainer_agreement",
+  "sampleOnly": true,
+  "note": "架空のデモ値。実在の人物・団体・事件とは無関係。監修済みではない（sample_only）。",
+  "recipient": {
+    "name": "株式会社ミドリ商事",
+    "organization": "株式会社ミドリ商事　代表取締役　緑川　太郎",
+    "address": "東京都中央区日本橋デモ町一丁目２番３号",
+    "postcode": "１０３－００２７",
+    "honorific": "御中"
+  },
+  "values": {
+    "office_name": {
+      "rawValue": "青葉法律事務所"
+    },
+    "office_postcode": {
+      "rawValue": "１００－００１３"
+    },
+    "office_address": {
+      "rawValue": "東京都千代田区霞が関一丁目１番１号　青葉デモビル５階"
+    },
+    "office_phone": {
+      "rawValue": "０３－００００－０００１"
+    },
+    "office_fax": {
+      "rawValue": "０３－００００－０００２"
+    },
+    "lawyer_name": {
+      "rawValue": "青葉　花子"
+    },
+    "recipient_address": {
+      "rawValue": "東京都中央区日本橋デモ町一丁目２番３号"
+    },
+    "matter_title": {
+      "rawValue": "売買代金請求事件（株式会社ミドリ商事）"
+    },
+    "client_name": {
+      "rawValue": "株式会社ミドリ商事"
+    },
+    "delegation_scope": {
+      "rawValue": "（サンプル）髙﨑産業株式会社に対する売買代金請求に関する交渉及び第一審訴訟手続。"
+    },
+    "fee_terms": {
+      "rawValue": "（サンプル）着手金・報酬金の額及び支払時期は、所内報酬基準に基づき別紙のとおりとする。"
+    },
+    "expense_terms": {
+      "rawValue": "（サンプル）実費（印紙・郵券・交通費等）は甲の負担とし、乙の請求に基づき精算する。"
+    },
+    "termination_terms": {
+      "rawValue": "（サンプル）甲又は乙は、相手方に通知して本契約を終了させることができる。終了時の精算方法は別紙による。"
+    },
+    "contract_date_raw": {
+      "rawValue": {
+        "raw": "令和８年１０月６日",
+        "iso": "2026-10-06",
+        "precision": "day"
+      }
+    }
+  },
+  "attachments": [],
+  "renderContext": {
+    "documentStatusLabel": "サンプル・要確認",
+    "templateVersionLabel": "T10_retainer_agreement demo-r1（sample_only・監修済みではない）",
+    "issueDateIso": "2026-10-06",
+    "issueDateWareki": "令和８年１０月６日"
+  },
+  "astFile": "ast_sample.json"
+}

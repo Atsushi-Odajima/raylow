@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "blocks": [
+    {
+      "id": "b1",
+      "type": "paragraph",
+      "text": "（サンプル）備考欄がある場合はここに記載する。"
+    }
+  ]
+}

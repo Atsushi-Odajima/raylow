@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "kind": "T12_complaint",
+  "sampleOnly": true,
+  "note": "架空のデモ値。実在の人物・団体・事件とは無関係。監修済みではない（sample_only）。",
+  "recipient": {
+    "name": "東京地方裁判所民事第１２部",
+    "organization": "東京地方裁判所",
+    "address": "東京都千代田区霞が関一丁目１番４号",
+    "postcode": "１００－８９２０",
+    "honorific": "御中"
+  },
+  "values": {
+    "office_name": {
+      "rawValue": "青葉法律事務所"
+    },
+    "office_postcode": {
+      "rawValue": "１００－００１３"
+    },
+    "office_address": {
+      "rawValue": "東京都千代田区霞が関一丁目１番１号　青葉デモビル５階"
+    },
+    "office_phone": {
+      "rawValue": "０３－００００－０００１"
+    },
+    "office_fax": {
+      "rawValue": "０３－００００－０００２"
+    },
+    "lawyer_name": {
+      "rawValue": "青葉　花子"
+    },
+    "recipient_organization": {
+      "rawValue": "東京地方裁判所"
+    },
+    "recipient_name": {
+      "rawValue": "東京地方裁判所民事第１２部"
+    },
+    "recipient_honorific": {
+      "rawValue": "御中"
+    },
+    "matter_title": {
+      "rawValue": "売買代金請求事件（株式会社ミドリ商事）"
+    },
+    "court_name": {
+      "rawValue": "東京地方裁判所"
+    },
+    "plaintiff_name": {
+      "rawValue": "株式会社ミドリ商事"
+    },
+    "plaintiff_address": {
+      "rawValue": "東京都中央区日本橋デモ町一丁目２番３号　代表取締役　緑川　太郎"
+    },
+    "defendant_name": {
+      "rawValue": "髙﨑産業株式会社"
+    },
+    "defendant_address": {
+      "rawValue": "埼玉県さいたま市大宮区デモ本町四丁目５番６号　髙﨑ビル２階　代表取締役　髙﨑　誠"
+    },
+    "case_name": {
+      "rawValue": "売買代金請求事件"
+    },
+    "claim_value_raw": {
+      "rawValue": "金３，３００，０００円（人が入力・確認）"
+    },
+    "stamp_fee_raw": {
+      "rawValue": "金２２，０００円（人が入力・確認）"
+    },
+    "postage_raw": {
+      "rawValue": "（人が入力）"
+    },
+    "claim_purpose_items": {
+      "rawValue": [
+        {
+          "no": "１",
+          "text": "（サンプル）被告は、原告に対し、金３，３００，０００円及びこれに対する遅延損害金を支払え。"
+        },
+        {
+          "no": "２",
+          "text": "（サンプル）訴訟費用は被告の負担とする。"
+        },
+        {
+          "no": "３",
+          "text": "（サンプル）との判決並びに仮執行の宣言を求める。"
+        }
+      ]
+    },
+    "evidence_refs": {
+      "rawValue": [
+        {
+          "label": "甲第１号証",
+          "title": "売買基本契約書（サンプル）"
+        },
+        {
+          "label": "甲第２号証",
+          "title": "請求書（サンプル）"
+        },
+        {
+          "label": "甲第３号証の１",
+          "title": "納品書（サンプル・枝番）"
+        }
+      ]
+    }
+  },
+  "attachments": [
+    {
+      "name": "訴訟委任状",
+      "copies": "１通"
+    },
+    {
+      "name": "資格証明書",
+      "copies": "２通"
+    },
+    {
+      "name": "甲号証写し",
+      "copies": "各２通"
+    }
+  ],
+  "renderContext": {
+    "documentStatusLabel": "サンプル・要確認",
+    "templateVersionLabel": "T12_complaint demo-r1（sample_only・監修済みではない）",
+    "issueDateIso": "2026-10-06",
+    "issueDateWareki": "令和８年１０月６日"
+  },
+  "astFile": "ast_sample.json"
+}

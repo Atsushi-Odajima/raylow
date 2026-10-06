@@ -155,13 +155,19 @@ export function parseJapaneseDate(raw: string): ParsedJapaneseDate {
   return { ...base, approximate, needsConfirmation: true };
 }
 
-/** ISO 日付 → 和暦表示（出力用。元年は「元年」と表記） */
-export function formatWareki(iso: string): string | null {
+/** ASCII 数字 → 全角数字（出力表記用） */
+export function toFullwidthDigits(s: string): string {
+  return s.replace(/[0-9]/g, (d) => String.fromCharCode(d.charCodeAt(0) + 0xfee0));
+}
+
+/** ISO 日付 → 和暦表示（出力用。元年は「元年」と表記）。digits 既定は ascii、書面出力では fullwidth を使う。 */
+export function formatWareki(iso: string, opts: { digits?: 'ascii' | 'fullwidth' } = {}): string | null {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
   if (!m) return null;
   const era = [...ERAS].reverse().find((e) => iso >= e.start && (e.end == null || iso <= e.end));
   if (!era) return null;
   const y = Number(m[1]) - era.firstYear + 1;
   const yStr = y === 1 ? '元' : String(y);
-  return `${era.name}${yStr}年${Number(m[2])}月${Number(m[3])}日`;
+  const out = `${era.name}${yStr}年${Number(m[2])}月${Number(m[3])}日`;
+  return opts.digits === 'fullwidth' ? toFullwidthDigits(out) : out;
 }

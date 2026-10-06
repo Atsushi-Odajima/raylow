@@ -1,0 +1,7 @@
+external_id,type,name_raw,kana,organization_name_raw,address_raw,postcode_raw,phone_raw,email_raw
+C001,lawyer,²“¡@ˆê˜Y,ƒTƒgƒE@ƒCƒ`ƒƒE,‚³‚­‚ç‘‡–@—¥––±Š,“Œ‹“s`‹æŒÕƒm–å“ñ’š–Ú‚Q”Ô‚Q†@ŒÕƒm–åƒfƒ‚ƒrƒ‹‚RŠK,‚P‚O‚T|‚O‚O‚O‚P,‚O‚R|‚O‚O‚O‚O|‚O‚P‚O‚P,sato.a@sakura-law.example
+C002,lawyer,²“¡@ˆê˜Y,ƒTƒgƒE@ƒCƒ`ƒƒE,`’†‰›–@—¥––±Š,_“ŞìŒ§‰¡•ls’†‹æ“ú–{‘å’Ê‚P‚Q”Ô’n@`ƒfƒ‚‰ïŠÙ‚VŠK,‚Q‚R‚P|‚O‚O‚Q‚P,‚O‚S‚T|‚O‚O‚O|‚O‚Q‚O‚Q,sato.b@minato-law.example
+C003,organization,Š”®‰ïĞƒ~ƒhƒŠ¤–,ƒ~ƒhƒŠƒVƒ‡ƒEƒW,,“Œ‹“s’†‰›‹æ“ú–{‹´ƒfƒ‚’¬ˆê’š–Ú‚Q”Ô‚R†,‚P‚O‚R|‚O‚O‚Q‚V,‚O‚R|‚O‚O‚O‚O|‚O‚Q‚O‚P,info@midori.example
+C004,organization,îàí•Y‹ÆŠ”®‰ïĞ,ƒ^ƒJƒTƒLƒTƒ“ƒMƒ‡ƒE,,é‹ÊŒ§‚³‚¢‚½‚Üs‘å‹{‹æƒfƒ‚–{’¬l’š–Ú‚T”Ô‚U†@îàí•ƒrƒ‹‚QŠK,‚R‚R‚O|‚O‚W‚S‚U,‚O‚S‚W|‚O‚O‚O|‚O‚R‚O‚R,info@takasaki.example
+C005,person,îà‹´@í•‘¾˜Y,À¶Ê¼ »·ÀÛ³,‡ŠƒeƒXƒg‡@†“X,“Œ‹“sVh‹æ¼Vhƒfƒ‚“ñ’š–Ú‚W”Ô‚P†@ƒfƒ‚ƒ^ƒ[‚R‚OŠK,‚P‚U‚R|‚W‚O‚O‚P,‚O‚X‚O|‚O‚O‚O‚O|‚O‚O‚O‚T,takahashi@example.invalid
+C008,person,“nç²@‡T˜Y,ƒƒ^ƒiƒx@ƒCƒ`ƒƒE,‡Šƒfƒ‚îà“‡‰®‡@,“Œ‹“s‘ä“Œ‹æƒfƒ‚‚P|‚P|‚P,‚P‚P‚O|‚O‚O‚O‚P,‚O‚R|‚O‚O‚O‚O|‚O‚O‚O‚W,watanabe@example.invalid

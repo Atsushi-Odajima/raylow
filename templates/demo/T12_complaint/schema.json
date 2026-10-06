@@ -1,0 +1,240 @@
+{
+  "schemaVersion": 1,
+  "kind": "T12_complaint",
+  "title": "訴状",
+  "scope": "court",
+  "recipientTypes": [
+    "court"
+  ],
+  "fields": [
+    {
+      "key": "office_name",
+      "type": "text",
+      "label": "自事務所名",
+      "source": "office",
+      "sourcePath": "office.name",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "office_postcode",
+      "type": "text",
+      "label": "事務所郵便番号",
+      "source": "office",
+      "sourcePath": "office.postcode",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "office_address",
+      "type": "text",
+      "label": "事務所所在地",
+      "source": "office",
+      "sourcePath": "office.address",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "office_phone",
+      "type": "text",
+      "label": "事務所電話番号",
+      "source": "office",
+      "sourcePath": "office.phone",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "office_fax",
+      "type": "text",
+      "label": "事務所ＦＡＸ番号",
+      "source": "office",
+      "sourcePath": "office.fax",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "lawyer_name",
+      "type": "text",
+      "label": "担当弁護士氏名",
+      "source": "office",
+      "sourcePath": "lawyer.name",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "recipient_organization",
+      "type": "text",
+      "label": "宛先の所属・組織",
+      "source": "recipient",
+      "sourcePath": "recipient.organization",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "recipient_name",
+      "type": "text",
+      "label": "宛名",
+      "source": "recipient",
+      "sourcePath": "recipient.name",
+      "required": true,
+      "defaultPolicy": "from_source",
+      "validationRules": [
+        {
+          "rule": "noDoubleHonorific"
+        }
+      ],
+      "description": "敬称を含めない。敬称は recipient_honorific（所内設定）で付加し、二重敬称を検出する。"
+    },
+    {
+      "key": "recipient_honorific",
+      "type": "text",
+      "label": "敬称",
+      "source": "recipient",
+      "sourcePath": "recipient.honorific",
+      "required": false,
+      "defaultPolicy": "from_source",
+      "description": "人物「先生/様」、組織「御中」等を所内設定から選択。"
+    },
+    {
+      "key": "matter_title",
+      "type": "text",
+      "label": "案件名",
+      "source": "matter",
+      "sourcePath": "matter.title",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "court_name",
+      "type": "text",
+      "label": "裁判所",
+      "source": "matter",
+      "sourcePath": "matter.court",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "plaintiff_name",
+      "type": "text",
+      "label": "原告（表示）",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none",
+      "description": "依頼者/相手方のどちらが原告かは案件ごとに人が指定する。氏名一致だけで置換しない。"
+    },
+    {
+      "key": "plaintiff_address",
+      "type": "text",
+      "label": "原告住所",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none"
+    },
+    {
+      "key": "defendant_name",
+      "type": "text",
+      "label": "被告（表示）",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none"
+    },
+    {
+      "key": "defendant_address",
+      "type": "text",
+      "label": "被告住所",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none"
+    },
+    {
+      "key": "case_name",
+      "type": "text",
+      "label": "事件名",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none",
+      "maxGraphemes": 60
+    },
+    {
+      "key": "claim_value_raw",
+      "type": "text",
+      "label": "訴額（人が入力・確認）",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none",
+      "description": "自動計算しない。原文のまま保持。"
+    },
+    {
+      "key": "stamp_fee_raw",
+      "type": "text",
+      "label": "貼用印紙額（人が入力・確認）",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none",
+      "description": "自動計算しない。原文のまま保持。"
+    },
+    {
+      "key": "postage_raw",
+      "type": "text",
+      "label": "予納郵券（原文）",
+      "source": "input",
+      "required": false,
+      "defaultPolicy": "none"
+    },
+    {
+      "key": "claim_purpose_items",
+      "type": "array",
+      "label": "請求の趣旨",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none",
+      "itemFields": [
+        {
+          "key": "no",
+          "type": "text",
+          "label": "番号",
+          "required": true,
+          "maxGraphemes": 10
+        },
+        {
+          "key": "text",
+          "type": "multiline",
+          "label": "請求の趣旨",
+          "required": true
+        }
+      ],
+      "maxItems": 50,
+      "legalJudgement": true
+    },
+    {
+      "key": "evidence_refs",
+      "type": "array",
+      "label": "証拠参照（証拠方法）",
+      "source": "input",
+      "required": false,
+      "defaultPolicy": "none",
+      "itemFields": [
+        {
+          "key": "label",
+          "type": "text",
+          "label": "証拠番号（表示ラベル）",
+          "required": true,
+          "maxGraphemes": 50
+        },
+        {
+          "key": "title",
+          "type": "text",
+          "label": "標目",
+          "required": false
+        }
+      ],
+      "maxItems": 200
+    }
+  ],
+  "bodyTag": "body_text",
+  "attachments": true,
+  "honorificKeys": [
+    "recipient_name"
+  ],
+  "notes": "訴額・印紙額は人が入力・確認（自動計算しない）。請求の趣旨は legalJudgement。証拠方法は evidence_refs。原告/被告の表示は人が指定する。"
+}

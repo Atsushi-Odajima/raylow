@@ -1,0 +1,212 @@
+{
+  "schemaVersion": 1,
+  "kind": "T18_documentary_evidence_submission",
+  "title": "書証提出書",
+  "scope": "court",
+  "recipientTypes": [
+    "court"
+  ],
+  "fields": [
+    {
+      "key": "office_name",
+      "type": "text",
+      "label": "自事務所名",
+      "source": "office",
+      "sourcePath": "office.name",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "office_postcode",
+      "type": "text",
+      "label": "事務所郵便番号",
+      "source": "office",
+      "sourcePath": "office.postcode",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "office_address",
+      "type": "text",
+      "label": "事務所所在地",
+      "source": "office",
+      "sourcePath": "office.address",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "office_phone",
+      "type": "text",
+      "label": "事務所電話番号",
+      "source": "office",
+      "sourcePath": "office.phone",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "office_fax",
+      "type": "text",
+      "label": "事務所ＦＡＸ番号",
+      "source": "office",
+      "sourcePath": "office.fax",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "lawyer_name",
+      "type": "text",
+      "label": "担当弁護士氏名",
+      "source": "office",
+      "sourcePath": "lawyer.name",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "recipient_organization",
+      "type": "text",
+      "label": "宛先の所属・組織",
+      "source": "recipient",
+      "sourcePath": "recipient.organization",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "recipient_name",
+      "type": "text",
+      "label": "宛名",
+      "source": "recipient",
+      "sourcePath": "recipient.name",
+      "required": true,
+      "defaultPolicy": "from_source",
+      "validationRules": [
+        {
+          "rule": "noDoubleHonorific"
+        }
+      ],
+      "description": "敬称を含めない。敬称は recipient_honorific（所内設定）で付加し、二重敬称を検出する。"
+    },
+    {
+      "key": "recipient_honorific",
+      "type": "text",
+      "label": "敬称",
+      "source": "recipient",
+      "sourcePath": "recipient.honorific",
+      "required": false,
+      "defaultPolicy": "from_source",
+      "description": "人物「先生/様」、組織「御中」等を所内設定から選択。"
+    },
+    {
+      "key": "matter_title",
+      "type": "text",
+      "label": "事件名（案件名）",
+      "source": "matter",
+      "sourcePath": "matter.title",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "case_number",
+      "type": "text",
+      "label": "事件番号（原文）",
+      "source": "matter",
+      "sourcePath": "matter.case_number",
+      "required": true,
+      "defaultPolicy": "from_source",
+      "description": "先頭 0 や全角数字を含む文字列として保持する。"
+    },
+    {
+      "key": "court_name",
+      "type": "text",
+      "label": "裁判所",
+      "source": "matter",
+      "sourcePath": "matter.court",
+      "required": true,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "court_department",
+      "type": "text",
+      "label": "係属部",
+      "source": "matter",
+      "sourcePath": "matter.court_department",
+      "required": false,
+      "defaultPolicy": "from_source"
+    },
+    {
+      "key": "submitter_position",
+      "type": "enum",
+      "label": "提出者の立場",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none",
+      "options": [
+        {
+          "value": "原告",
+          "label": "原告"
+        },
+        {
+          "value": "被告",
+          "label": "被告"
+        },
+        {
+          "value": "申立人",
+          "label": "申立人"
+        },
+        {
+          "value": "相手方",
+          "label": "相手方"
+        },
+        {
+          "value": "その他",
+          "label": "その他"
+        }
+      ]
+    },
+    {
+      "key": "submitted_evidence",
+      "type": "array",
+      "label": "提出する書証",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none",
+      "itemFields": [
+        {
+          "key": "label",
+          "type": "text",
+          "label": "証拠番号（表示ラベル）",
+          "required": true,
+          "maxGraphemes": 50
+        },
+        {
+          "key": "title",
+          "type": "text",
+          "label": "標目",
+          "required": true
+        },
+        {
+          "key": "copies",
+          "type": "text",
+          "label": "通数（原文）",
+          "required": true,
+          "maxGraphemes": 20
+        }
+      ],
+      "maxItems": 500
+    },
+    {
+      "key": "applicability_confirmed",
+      "type": "boolean",
+      "label": "手続・裁判所への適用を確認済み",
+      "source": "input",
+      "required": true,
+      "defaultPolicy": "none",
+      "description": "選択された手続/裁判所に適用するか確認する。既定 OFF。"
+    }
+  ],
+  "bodyTag": "body_text",
+  "attachments": true,
+  "honorificKeys": [
+    "recipient_name"
+  ],
+  "notes": "事件情報・提出する書証一覧・対応資料。選択された手続/裁判所に適用するか確認（applicability_confirmed）。"
+}

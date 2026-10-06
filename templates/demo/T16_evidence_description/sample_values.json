@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "kind": "T16_evidence_description",
+  "sampleOnly": true,
+  "note": "架空のデモ値。実在の人物・団体・事件とは無関係。監修済みではない（sample_only）。",
+  "recipient": {
+    "name": "東京地方裁判所民事第１２部",
+    "organization": "東京地方裁判所",
+    "address": "東京都千代田区霞が関一丁目１番４号",
+    "postcode": "１００－８９２０",
+    "honorific": "御中"
+  },
+  "values": {
+    "office_name": {
+      "rawValue": "青葉法律事務所"
+    },
+    "office_postcode": {
+      "rawValue": "１００－００１３"
+    },
+    "office_address": {
+      "rawValue": "東京都千代田区霞が関一丁目１番１号　青葉デモビル５階"
+    },
+    "office_phone": {
+      "rawValue": "０３－００００－０００１"
+    },
+    "office_fax": {
+      "rawValue": "０３－００００－０００２"
+    },
+    "lawyer_name": {
+      "rawValue": "青葉　花子"
+    },
+    "recipient_organization": {
+      "rawValue": "東京地方裁判所"
+    },
+    "recipient_name": {
+      "rawValue": "東京地方裁判所民事第１２部"
+    },
+    "recipient_honorific": {
+      "rawValue": "御中"
+    },
+    "matter_title": {
+      "rawValue": "売買代金請求事件（株式会社ミドリ商事）"
+    },
+    "case_number": {
+      "rawValue": "令和８年（ワ）第１２３４号"
+    },
+    "court_name": {
+      "rawValue": "東京地方裁判所"
+    },
+    "court_department": {
+      "rawValue": "民事第１２部"
+    },
+    "submitter_position": {
+      "rawValue": "原告"
+    },
+    "evidence_rows": {
+      "rawValue": [
+        {
+          "label": "甲第１号証",
+          "title": "売買基本契約書（サンプル）",
+          "made_date": "令和７年４月１日",
+          "author": "原告・被告",
+          "original_copy": "写し",
+          "proof_purpose": "（弁護士が入力・サンプル）原告と被告の間の取引条件"
+        },
+        {
+          "label": "甲第２号証",
+          "title": "請求書（サンプル）",
+          "made_date": "令和７年８月３１日",
+          "author": "原告",
+          "original_copy": "写し",
+          "proof_purpose": "（弁護士が入力・サンプル）請求の事実"
+        },
+        {
+          "label": "甲第３号証の１",
+          "title": "納品書（サンプル・枝番）",
+          "made_date": "令和７年５月１０日",
+          "author": "原告",
+          "original_copy": "原本",
+          "proof_purpose": "（弁護士が入力・サンプル）納品の事実"
+        }
+      ]
+    }
+  },
+  "attachments": [],
+  "renderContext": {
+    "documentStatusLabel": "サンプル・要確認",
+    "templateVersionLabel": "T16_evidence_description demo-r1（sample_only・監修済みではない）",
+    "issueDateIso": "2026-10-06",
+    "issueDateWareki": "令和８年１０月６日"
+  },
+  "astFile": "ast_sample.json"
+}

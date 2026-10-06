@@ -1,0 +1,13 @@
+{
+  "source": "RayLaw demo (架空・自作)",
+  "sampleOnly": true,
+  "supervised": false,
+  "license": "demo-internal",
+  "sourceUrl": null,
+  "checkedAt": "2026-10-06",
+  "applicability": "デモ専用。所内弁護士の確認と承認前は正式出力不可",
+  "notes": "監修済みではない",
+  "kind": "T01_engagement_notice",
+  "title": "受任通知",
+  "generator": "scripts/build_demo_templates.py"
+}

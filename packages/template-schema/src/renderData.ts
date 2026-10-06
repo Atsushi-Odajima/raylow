@@ -25,7 +25,7 @@ function formatScalar(f: FieldSpec | undefined, raw: unknown): string {
   if (typeof raw === 'number') return String(raw);
   if (typeof raw === 'string') {
     if (f?.outputFormat === 'wareki') {
-      const w = formatWareki(raw);
+      const w = formatWareki(raw, { digits: 'fullwidth' });
       return w ?? raw;
     }
     if (f?.outputFormat === 'jpy_grouped') {
@@ -41,7 +41,7 @@ function formatScalar(f: FieldSpec | undefined, raw: unknown): string {
       if (typeof o.raw === 'string') return o.raw;
     }
     if (f?.type === 'date') {
-      if (f.outputFormat === 'wareki' && typeof o.iso === 'string') return formatWareki(o.iso) ?? (o.raw as string) ?? '';
+      if (f.outputFormat === 'wareki' && typeof o.iso === 'string') return formatWareki(o.iso, { digits: 'fullwidth' }) ?? (o.raw as string) ?? '';
       if (f.outputFormat === 'iso_date' && typeof o.iso === 'string') return o.iso;
       if (typeof o.raw === 'string') return o.raw;
     }
@@ -96,7 +96,7 @@ export function buildRenderData(schema: TemplateFieldSchema, values: FieldValues
   data.template_version_label = ctx.templateVersionLabel;
   if (ctx.issueDateIso) {
     data.issue_date = data.issue_date && typeof data.issue_date === 'string' && data.issue_date.length > 0 ? data.issue_date : ctx.issueDateIso;
-    data.issue_date_wareki = formatWareki(ctx.issueDateIso) ?? ctx.issueDateIso;
+    data.issue_date_wareki = formatWareki(ctx.issueDateIso, { digits: 'fullwidth' }) ?? ctx.issueDateIso;
   }
   return data;
 }

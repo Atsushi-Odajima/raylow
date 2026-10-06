@@ -1,0 +1,381 @@
+[
+  {
+    "id": "fullwidth_alnum",
+    "raw": "ＡＢＣ１２３",
+    "expectedSearchKey": "abc123",
+    "note": "全角英数字(U+FF21..)→ASCII 小文字。ascii_alnum と同じキー"
+  },
+  {
+    "id": "ascii_alnum",
+    "raw": "ABC123",
+    "expectedSearchKey": "abc123",
+    "note": "ASCII 大文字→小文字"
+  },
+  {
+    "id": "halfwidth_kana_voiced",
+    "raw": "ｶﾞ",
+    "expectedSearchKey": "ガ",
+    "note": "半角カナ U+FF76 + 半角濁点 U+FF9E の区間だけ NFKC → ガ U+30AC"
+  },
+  {
+    "id": "fullwidth_katakana_ga",
+    "raw": "ガ",
+    "expectedSearchKey": "ガ",
+    "note": "全角カナはそのまま。halfwidth_kana_voiced と同じキー"
+  },
+  {
+    "id": "hiragana_combining_dakuten",
+    "raw": "が",
+    "expectedSearchKey": "が",
+    "mustNotEqualKeyOf": "hiragana_precomposed_ga",
+    "note": "か U+304B + 結合濁点 U+3099。NFC/NFKC を行わないので が U+304C に合成しない"
+  },
+  {
+    "id": "hiragana_precomposed_ga",
+    "raw": "が",
+    "expectedSearchKey": "が",
+    "note": "合成済み が U+304C"
+  },
+  {
+    "id": "circled_one",
+    "raw": "①",
+    "expectedSearchKey": "①",
+    "mustNotEqualKeyOf": "ascii_one",
+    "note": "丸数字 U+2460 を 1 に畳まない（NFKC なら 1 になる）"
+  },
+  {
+    "id": "ascii_one",
+    "raw": "1",
+    "expectedSearchKey": "1",
+    "note": "ASCII 数字"
+  },
+  {
+    "id": "roman_numeral_one",
+    "raw": "Ⅰ",
+    "expectedSearchKey": "Ⅰ",
+    "mustNotEqualKeyOf": "ascii_letter_i",
+    "note": "ローマ数字 U+2160 を I に畳まない（NFKC なら I になる）"
+  },
+  {
+    "id": "ascii_letter_i",
+    "raw": "I",
+    "expectedSearchKey": "i",
+    "note": "ASCII 大文字 I → i"
+  },
+  {
+    "id": "square_kabushiki",
+    "raw": "㈱",
+    "expectedSearchKey": "㈱",
+    "mustNotEqualKeyOf": "paren_kabu_ascii",
+    "note": "U+3231 を (株) に畳まない（NFKC なら (株) になる）"
+  },
+  {
+    "id": "paren_kabu_ascii",
+    "raw": "(株)",
+    "expectedSearchKey": "(株)",
+    "note": "ASCII 括弧"
+  },
+  {
+    "id": "paren_kabu_fullwidth",
+    "raw": "（株）",
+    "expectedSearchKey": "(株)",
+    "mustNotEqualKeyOf": "square_kabushiki",
+    "note": "全角丸括弧 U+FF08/U+FF09 → ASCII 括弧。paren_kabu_ascii と同じキーだが ㈱ とは異なる"
+  },
+  {
+    "id": "takahashi_variant",
+    "raw": "髙橋",
+    "expectedSearchKey": "髙橋",
+    "mustNotEqualKeyOf": "takahashi_standard",
+    "note": "髙 U+9AD9（はしごだか）を 高 U+9AD8 に畳まない"
+  },
+  {
+    "id": "takahashi_standard",
+    "raw": "高橋",
+    "expectedSearchKey": "高橋",
+    "note": "高 U+9AD8"
+  },
+  {
+    "id": "saki_variant",
+    "raw": "﨑",
+    "expectedSearchKey": "﨑",
+    "mustNotEqualKeyOf": "saki_standard",
+    "note": "﨑 U+FA11（CJK 互換漢字・分解なし）を 崎 U+5D0E に畳まない。別名辞書は明示登録のみ"
+  },
+  {
+    "id": "saki_standard",
+    "raw": "崎",
+    "expectedSearchKey": "崎",
+    "note": "崎 U+5D0E"
+  },
+  {
+    "id": "yoshi_sip",
+    "raw": "𠮷",
+    "expectedSearchKey": "𠮷",
+    "mustNotEqualKeyOf": "yoshi_standard",
+    "note": "𠮷 U+20BB7（SIP・UTF-16 ではサロゲートペア）を 吉 U+5409 に畳まない。分割もしない"
+  },
+  {
+    "id": "yoshi_standard",
+    "raw": "吉",
+    "expectedSearchKey": "吉",
+    "note": "吉 U+5409"
+  },
+  {
+    "id": "katsu_ivs",
+    "raw": "葛󠄀",
+    "expectedSearchKey": "葛󠄀",
+    "mustNotEqualKeyOf": "katsu_plain",
+    "note": "葛 U+845B + IVS U+E0100。異体字セレクタを削除しない"
+  },
+  {
+    "id": "katsu_plain",
+    "raw": "葛",
+    "expectedSearchKey": "葛",
+    "note": "葛 U+845B のみ"
+  },
+  {
+    "id": "ideographic_space_between",
+    "raw": "佐藤　一郎",
+    "expectedSearchKey": "佐藤 一郎",
+    "note": "U+3000 → U+0020。ascii_space_between と同じキー"
+  },
+  {
+    "id": "ascii_space_between",
+    "raw": "佐藤 一郎",
+    "expectedSearchKey": "佐藤 一郎",
+    "note": "ASCII 空白 1 つ"
+  },
+  {
+    "id": "dash_fullwidth_hyphen_minus",
+    "raw": "－",
+    "expectedSearchKey": "－",
+    "mustNotEqualKeyOf": "dash_katakana_prolonged",
+    "note": "U+FF0D FULLWIDTH HYPHEN-MINUS は全角英数字の範囲外なので変換しない"
+  },
+  {
+    "id": "dash_katakana_prolonged",
+    "raw": "ー",
+    "expectedSearchKey": "ー",
+    "mustNotEqualKeyOf": "dash_minus_sign",
+    "note": "U+30FC 長音記号"
+  },
+  {
+    "id": "dash_minus_sign",
+    "raw": "−",
+    "expectedSearchKey": "−",
+    "mustNotEqualKeyOf": "dash_horizontal_bar",
+    "note": "U+2212 MINUS SIGN"
+  },
+  {
+    "id": "dash_horizontal_bar",
+    "raw": "―",
+    "expectedSearchKey": "―",
+    "mustNotEqualKeyOf": "dash_fullwidth_hyphen_minus",
+    "note": "U+2015 HORIZONTAL BAR"
+  },
+  {
+    "id": "dash_em",
+    "raw": "—",
+    "expectedSearchKey": "—",
+    "mustNotEqualKeyOf": "dash_horizontal_bar",
+    "note": "U+2014 EM DASH（cp932 では encode 不能）"
+  },
+  {
+    "id": "wave_dash",
+    "raw": "〜",
+    "expectedSearchKey": "〜",
+    "mustNotEqualKeyOf": "fullwidth_tilde",
+    "note": "U+301C WAVE DASH"
+  },
+  {
+    "id": "fullwidth_tilde",
+    "raw": "～",
+    "expectedSearchKey": "～",
+    "note": "U+FF5E FULLWIDTH TILDE は変換しない（NFKC なら ~ になる）"
+  },
+  {
+    "id": "yen_sign",
+    "raw": "¥",
+    "expectedSearchKey": "¥",
+    "mustNotEqualKeyOf": "backslash",
+    "note": "U+00A5 YEN SIGN"
+  },
+  {
+    "id": "backslash",
+    "raw": "\\",
+    "expectedSearchKey": "\\",
+    "note": "U+005C REVERSE SOLIDUS"
+  },
+  {
+    "id": "fullwidth_yen",
+    "raw": "￥",
+    "expectedSearchKey": "￥",
+    "mustNotEqualKeyOf": "yen_sign",
+    "note": "U+FFE5 FULLWIDTH YEN SIGN は変換しない"
+  },
+  {
+    "id": "reiwa_gannen_valid_start",
+    "raw": "令和元年５月１日",
+    "expectedSearchKey": "令和元年5月1日",
+    "note": "令和の開始日 2019-05-01。全角数字のみ ASCII 化、元年は文字列のまま"
+  },
+  {
+    "id": "reiwa_gannen_invalid_boundary",
+    "raw": "令和元年４月３０日",
+    "expectedSearchKey": "令和元年4月30日",
+    "note": "元号境界の不整合例（令和は 2019-05-01 開始）。検索キーは正誤を判定しない"
+  },
+  {
+    "id": "heisei31_invalid_boundary",
+    "raw": "平成３１年５月１日",
+    "expectedSearchKey": "平成31年5月1日",
+    "note": "元号境界の不整合例（平成は 2019-04-30 まで）"
+  },
+  {
+    "id": "reiwa_approximate_year",
+    "raw": "令和８年頃",
+    "expectedSearchKey": "令和8年頃",
+    "note": "「頃」は precision=year の候補。キー化では文字列のまま"
+  },
+  {
+    "id": "evidence_branch_label_fullwidth",
+    "raw": "甲第３号証の１",
+    "expectedSearchKey": "甲第3号証の1",
+    "note": "証拠枝番。3.1 の浮動小数にしない。evidence_branch_label_ascii と同じキー"
+  },
+  {
+    "id": "evidence_branch_label_ascii",
+    "raw": "甲第3号証の1",
+    "expectedSearchKey": "甲第3号証の1",
+    "note": "ASCII 数字の枝番"
+  },
+  {
+    "id": "evidence_label_otsu",
+    "raw": "乙第１０号証",
+    "expectedSearchKey": "乙第10号証",
+    "note": "乙号証・2 桁"
+  },
+  {
+    "id": "leading_zero_fullwidth",
+    "raw": "０１２",
+    "expectedSearchKey": "012",
+    "note": "先頭 0 を保持。leading_zero_ascii と同じキー"
+  },
+  {
+    "id": "leading_zero_ascii",
+    "raw": "012",
+    "expectedSearchKey": "012",
+    "mustNotEqualKeyOf": "twelve",
+    "note": "012 ≠ 12（先頭 0 を数値化しない）"
+  },
+  {
+    "id": "twelve",
+    "raw": "１２",
+    "expectedSearchKey": "12",
+    "note": "全角 １２ → 12"
+  },
+  {
+    "id": "case_number_leading_zero",
+    "raw": "令和８年（ワ）第００１２号",
+    "expectedSearchKey": "令和8年(ワ)第0012号",
+    "note": "事件番号は文字列。括弧は ASCII 化、先頭 0 は保持"
+  },
+  {
+    "id": "surrounding_ideographic_space",
+    "raw": "　前後空白　",
+    "expectedSearchKey": "前後空白",
+    "note": "前後の U+3000 は trim（検索キーのみ。原文は保持）"
+  },
+  {
+    "id": "mixed_whitespace_collapse",
+    "raw": "  佐藤 　 一郎  ",
+    "expectedSearchKey": "佐藤 一郎",
+    "note": "連続空白（ASCII 空白と U+3000 の混在）を 1 つにまとめ、前後を trim"
+  },
+  {
+    "id": "tab_collapse",
+    "raw": "佐藤\t一郎",
+    "expectedSearchKey": "佐藤 一郎",
+    "note": "TAB U+0009 は ASCII 空白として 1 つの U+0020 に"
+  },
+  {
+    "id": "nbsp_not_collapsed",
+    "raw": "佐藤 一郎",
+    "expectedSearchKey": "佐藤 一郎",
+    "mustNotEqualKeyOf": "ascii_space_between",
+    "note": "U+00A0 NO-BREAK SPACE は ASCII 空白ではないので変換しない"
+  },
+  {
+    "id": "halfwidth_kana_run_with_space",
+    "raw": "ﾀﾅｴ ﾋﾞﾙ",
+    "expectedSearchKey": "タナエ ビル",
+    "note": "半角カナ区間 + ASCII 空白 + 半角カナ区間"
+  },
+  {
+    "id": "halfwidth_kana_handakuten",
+    "raw": "ﾊﾟﾋﾞ",
+    "expectedSearchKey": "パビ",
+    "note": "半濁点 U+FF9F / 濁点 U+FF9E"
+  },
+  {
+    "id": "halfwidth_kana_u_voiced",
+    "raw": "ｳﾞ",
+    "expectedSearchKey": "ヴ",
+    "note": "ｳ U+FF73 + ﾞ → ヴ U+30F4"
+  },
+  {
+    "id": "halfwidth_prolonged_mark",
+    "raw": "ｺｰﾋｰ",
+    "expectedSearchKey": "コーヒー",
+    "note": "半角長音 U+FF70 → ー U+30FC"
+  },
+  {
+    "id": "lone_halfwidth_dakuten",
+    "raw": "ﾞ",
+    "expectedSearchKey": "゙",
+    "note": "単独の半角濁点 U+FF9E は NFKC で結合濁点 U+3099 になる（TS 実装と同じ）"
+  },
+  {
+    "id": "fullwidth_mixed_case",
+    "raw": "ＴｏＫｙＯ",
+    "expectedSearchKey": "tokyo",
+    "note": "全角英字の大小混在"
+  },
+  {
+    "id": "ascii_url_lowercased",
+    "raw": "HTTPS://Example.COM/Path",
+    "expectedSearchKey": "https://example.com/path",
+    "note": "大文字→小文字は URL にも及ぶ（検索キーのみ。原文は保持）"
+  },
+  {
+    "id": "fullwidth_paren_colon",
+    "raw": "（旧姓：田中）",
+    "expectedSearchKey": "(旧姓：田中)",
+    "note": "全角コロン U+FF1A は変換しない"
+  },
+  {
+    "id": "fullwidth_symbols_not_folded",
+    "raw": "＠＃％",
+    "expectedSearchKey": "＠＃％",
+    "note": "全角記号 U+FF20/U+FF03/U+FF05 は範囲外"
+  },
+  {
+    "id": "emoji_zwj",
+    "raw": "👨‍👩‍👧",
+    "expectedSearchKey": "👨‍👩‍👧",
+    "note": "ZWJ 列を分割しない"
+  },
+  {
+    "id": "halfwidth_kana_with_fullwidth_alnum",
+    "raw": "ｶﾌﾟｾﾙＡ１",
+    "expectedSearchKey": "カプセルa1",
+    "note": "半角カナ区間と全角英数字の混在"
+  },
+  {
+    "id": "long_name_30_graphemes",
+    "raw": "一般社団法人全国中小企業取引適正化推進協議会関東甲信越支部事務局",
+    "expectedSearchKey": "一般社団法人全国中小企業取引適正化推進協議会関東甲信越支部事務局",
+    "note": "31 grapheme の長い名称。変更なし"
+  }
+]

@@ -1,1 +1,33 @@
-{"name":"@raylow/worker","version":"0.1.0","private":true,"type":"module"}
+{
+  "name": "@raylow/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -b",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@raylow/contracts": "0.1.0",
+    "@raylow/domain": "0.1.0",
+    "@raylow/japanese-text": "0.1.0",
+    "@raylow/template-schema": "0.1.0",
+    "@xmldom/xmldom": "0.9.12",
+    "csv-stringify": "6.9.0",
+    "docxtemplater": "3.71.0",
+    "dotenv": "17.2.3",
+    "iconv-lite": "0.7.3",
+    "lodash": "4.18.1",
+    "pg": "8.23.1",
+    "pino": "9.14.0",
+    "pizzip": "3.3.0",
+    "yazl": "3.3.1",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@types/pg": "8.23.1",
+    "@types/yazl": "3.3.1"
+  }
+}

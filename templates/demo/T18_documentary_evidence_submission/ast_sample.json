@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "blocks": [
+    {
+      "id": "b1",
+      "type": "paragraph",
+      "text": "（サンプル）提出に関する連絡事項があればここに記載する。"
+    }
+  ]
+}
