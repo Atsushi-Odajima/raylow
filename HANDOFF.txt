@@ -97,4 +97,4 @@ NODE_ENV, RAYLOW_PUBLIC_ORIGIN, DATABASE_URL, DATABASE_URL_APP, DATABASE_URL_SER
 
 12. commit
 ----------
-本 HANDOFF を含む実装 commit: 7c6a889（docs 追記 commit がこの直後に 1 つ続く）
+実装の最終 commit: 74c04f0（この HANDOFF 更新 commit がこの直後に 1 つ続く）
