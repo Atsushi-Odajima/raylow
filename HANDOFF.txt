@@ -94,3 +94,7 @@ NODE_ENV, RAYLOW_PUBLIC_ORIGIN, DATABASE_URL, DATABASE_URL_APP, DATABASE_URL_SER
 6 passed / 0 failed（約 40 秒）。実機 iPhone ではなく Chromium 141 の 390×844 エミュレーション。
 
 性能（縮小計測、docs/perf-report.md）: 一覧 p95 430ms（200 案件）、検索 p95 ≤120ms、ホーム p95 506ms（20 並列）。文書生成 1/10/100 件: 3.1s / 28.1s / 269.8s、失敗 0（worker 1 プロセス直列、1 文書あたり約 2.7〜3.1 秒）。本番相当規模ではない。
+
+12. commit
+----------
+本 HANDOFF を含む実装 commit: 7c6a889（docs 追記 commit がこの直後に 1 つ続く）
