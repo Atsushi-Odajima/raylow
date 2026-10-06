@@ -162,7 +162,7 @@ export const RefreshCandidatesResponseSchema = z.object({ candidates: z.array(Re
 export const ApplyCandidatesSchema = z.object({ expectedVersion: ExpectedVersionSchema, fieldKeys: z.array(z.string()).min(1) });
 export const RenderRequestSchema = z.object({ mode: z.enum(['draft', 'final']).default('draft') });
 export const RenderResponseSchema = z.object({ jobId: UuidSchema, deduplicated: z.boolean() });
-export const ReviewRequestCreateSchema = z.object({ reviewerId: UuidSchema, note: RawText(1000).optional() });
+export const ReviewRequestCreateSchema = z.object({ reviewerId: UuidSchema, note: RawText(1000).optional(), confirmations: z.array(z.object({ code: z.string().max(64), reason: RawText(500).min(1) })).default([]) });
 export const DraftListQuerySchema = z.object({
   matterId: UuidSchema.optional(),
   kind: z.string().optional(),

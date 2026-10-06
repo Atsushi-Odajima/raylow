@@ -1,9 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
+import type {
+  ContactSearchQuerySchema} from '@raylow/contracts';
 import {
   ContactInputSchema,
   ContactSchema,
-  ContactSearchQuerySchema,
   ContactUpdateSchema,
   LawyerInputSchema,
   LawyerSchema,
@@ -33,6 +34,9 @@ export type LawyerInput = z.input<typeof LawyerInputSchema>;
 export type ContactInput = z.input<typeof ContactInputSchema>;
 export type ContactSearchQuery = z.input<typeof ContactSearchQuerySchema>;
 export type MemberInvite = z.input<typeof MemberInviteSchema>;
+/** PUT /api/members/:userId は expectedVersion 必須だが MemberSchema に version が無いため、API が返す場合に読む */
+const MemberWithVersionSchema = MemberSchema.extend({ version: z.number().int().optional() });
+export type MemberWithVersion = z.infer<typeof MemberWithVersionSchema>;
 
 export function useOffices() {
   return useQuery({ queryKey: masterKeys.offices, queryFn: () => apiRequest<OfficeProfile[]>('/api/offices', { schema: z.array(OfficeProfileSchema) }) });
@@ -68,7 +72,7 @@ export function useUpdateLawyer() {
 }
 
 export function useMembers(enabled = true) {
-  return useQuery({ queryKey: masterKeys.members, queryFn: () => apiRequest<Member[]>('/api/members', { schema: z.array(MemberSchema) }), enabled });
+  return useQuery({ queryKey: masterKeys.members, queryFn: () => apiRequest<MemberWithVersion[]>('/api/members', { schema: z.array(MemberWithVersionSchema) }), enabled });
 }
 export function useInviteMember() {
   const qc = useQueryClient();

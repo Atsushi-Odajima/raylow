@@ -11,7 +11,7 @@ import { z } from 'zod';
 import { graphemeLength } from '@raylow/japanese-text';
 import { checkConditionLimits, conditionFields, evaluateCondition, type Condition } from './condition.js';
 import { FieldSpecSchema, TemplateFieldSchemaSchema, type FieldSpec, type TemplateFieldSchema } from './fieldSpec.js';
-import { COMMON_TAG_KEYS, isSafeTagKey, type ParsedTag } from './tags.js';
+import { isSafeTagKey, type ParsedTag } from './tags.js';
 
 export interface SchemaIssue {
   severity: 'error' | 'warning';
@@ -221,7 +221,9 @@ export function validateFieldValues(schema: TemplateFieldSchema, values: FieldVa
   const issues: ValueIssue[] = [];
   for (const f of schema.fields) {
     if (!isFieldVisible(f, values)) continue;
-    const raw = rawOf(values[f.key]);
+    const rawFull = rawOf(values[f.key]);
+    // date/money は {raw, iso|decimal, ...} のオブジェクトを許容する（原文 raw を検査対象にする）
+    const raw: unknown = rawFull && typeof rawFull === 'object' && !Array.isArray(rawFull) && 'raw' in (rawFull as object) ? (rawFull as { raw: unknown }).raw : rawFull;
     const present = raw !== undefined && raw !== null && !(typeof raw === 'string' && raw.length === 0) && !(Array.isArray(raw) && raw.length === 0);
     if (isFieldRequired(f, values) && !present) {
       issues.push({ severity: 'error', code: 'required_missing', fieldKey: f.key, message: `${f.label} が未入力です` });

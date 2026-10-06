@@ -23,6 +23,6 @@ export const JobSchema = z.object({
 });
 export type Job = z.infer<typeof JobSchema>;
 
-export const JOB_TYPES = ['render_draft', 'render_final', 'inspect_template', 'test_template', 'scan_file', 'batch_render', 'render_packet', 'export', 'import_csv', 'external_edit_ingest'] as const;
+export const JOB_TYPES = ['render_draft', 'render_final', 'inspect_template', 'test_template', 'scan_file', 'render_packet', 'export', 'external_edit_ingest'] as const;
 export const JobTypeSchema = z.enum(JOB_TYPES);
 export type JobType = z.infer<typeof JobTypeSchema>;

@@ -56,6 +56,7 @@ export const OrgSettingsSchema = z.object({
   minLawyersForApproval: z.number().int(),
   backupNote: z.string(),
   storageRegionNote: z.string(),
+  version: z.number().int(),
 });
 export const OrgSettingsUpdateSchema = z.object({ nameRaw: RawText(200).optional(), retentionYears: z.number().int().min(1).max(100).nullable().optional(), autoDeleteEnabled: z.boolean().optional(), expectedVersion: z.number().int() });
 

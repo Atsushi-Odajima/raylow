@@ -320,13 +320,16 @@ function MappingStep({ v, onSaved }: { v: TemplateVersion; onSaved: () => void }
     bodyTag,
     attachments,
   };
+  // schemaInput は毎 render 作られるため JSON 文字列で比較する
+  const schemaJson = JSON.stringify(schemaInput);
   const localCheck = useMemo(() => {
-    const parsed = parseTemplateFieldSchema(schemaInput);
+    const parsed = parseTemplateFieldSchema(JSON.parse(schemaJson) as unknown);
     if (!parsed.schema) return parsed.issues;
-    return validateTemplateSchema(parsed.schema, (v.inspectionReport?.tags ?? []).map((t) => ({ ...t, location: t.location })));
-    // schemaInput は毎 render 作られるため JSON 文字列で比較
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [JSON.stringify(schemaInput), v.inspectionReport]);
+    return validateTemplateSchema(
+      parsed.schema,
+      (v.inspectionReport?.tags ?? []).map((t) => ({ raw: t.raw, kind: t.kind, key: t.key, valid: t.valid, location: t.location, ...(t.reason !== undefined ? { reason: t.reason } : {}) })),
+    );
+  }, [schemaJson, v.inspectionReport]);
   const localErrors = localCheck.filter((i) => i.severity === 'error');
 
   const update = (i: number, patch: Partial<FieldRow>) => setFields(fields.map((f, k) => (k === i ? { ...f, ...patch } : f)));
@@ -367,6 +370,38 @@ function MappingStep({ v, onSaved }: { v: TemplateVersion; onSaved: () => void }
         <Alert kind="warning" title={`未対応付けのタグが ${unmapped.length} 件あります`}>
           <div className="chip-list">{unmapped.map((t) => <Button key={t.key} small icon="plus" onClick={() => addForTag(t.key)}>{t.raw} の項目を追加</Button>)}</div>
         </Alert>
+      ) : null}
+
+      {valueTags.length > 0 ? (
+        <details>
+          <summary>タグ → 項目の対応（{valueTags.length} タグ。既定は同名キー）</summary>
+          <div className="table-wrap">
+            <table className="table">
+              <caption className="sr-only">タグと項目の対応</caption>
+              <thead><tr><th scope="col">タグ</th><th scope="col">位置</th><th scope="col">対応する項目</th></tr></thead>
+              <tbody>
+                {valueTags.map((t) => {
+                  const mapped = tagMap[t.key] ?? (fields.some((f) => f.key === t.key) ? t.key : '');
+                  return (
+                    <tr key={t.key}>
+                      <td className="mono">{t.raw}</td>
+                      <td className="mono aux">{t.location}</td>
+                      <td>
+                        <Select
+                          aria-label={`${t.raw} に対応する項目`}
+                          value={mapped}
+                          onValueChange={(val) => setTagMap((m) => { const n = { ...m }; if (val && val !== t.key) n[t.key] = val; else delete n[t.key]; return n; })}
+                          placeholder={arrayItemKeys.has(t.key) ? '（配列の行項目）' : t.key === bodyTag ? '（本文タグ）' : '未対応付け'}
+                          options={fields.filter((f) => f.type !== 'array').map((f) => ({ value: f.key, label: `${f.label}（${f.key}）` }))}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </details>
       ) : null}
 
       <div className="stack-s">

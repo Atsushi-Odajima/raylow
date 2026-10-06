@@ -71,10 +71,10 @@ export function astToLines(ast: DocumentAST): RenderLine[] {
   });
 }
 
-/** AST → body_text（段落は改行、番号付きは「番号　本文」。全角空白はアプリ既定ではなく書式側で決める） */
+/** AST → body_text（段落は改行、番号付きは「番号\u3000本文」。全角空白はアプリ既定ではなく書式側で決める） */
 export function astToPlainText(ast: DocumentAST): string {
   return astToLines(ast)
-    .map((l) => (l.kind === 'numbered' && l.numberLabel ? `${l.numberLabel}　${l.text}` : l.text))
+    .map((l) => (l.kind === 'numbered' && l.numberLabel ? `${l.numberLabel}\u3000${l.text}` : l.text))
     .join('\n');
 }
 

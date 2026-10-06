@@ -3,13 +3,19 @@
  * 取得は credentials:'include' の fetch（no-store）。古いプレビューは呼び出し側がラベル表示。
  */
 import { useEffect, useRef, useState } from 'react';
-import * as pdfjs from 'pdfjs-dist';
+import type { PDFDocumentProxy } from 'pdfjs-dist';
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { fetchBlob } from '../lib/download';
 import { isApiError } from '../lib/apiClient';
 import { Alert } from './Alert';
 import { Icon } from './Icon';
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString();
+/** PDF.js はプレビュー表示時にだけ読み込む（初期バンドルを小さくする） */
+async function loadPdfjs() {
+  const pdfjs = await import('pdfjs-dist');
+  if (!pdfjs.GlobalWorkerOptions.workerSrc) pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+  return pdfjs;
+}
 
 export interface PdfPreviewProps {
   /** null のときは「プレビュー未生成」 */
@@ -35,11 +41,11 @@ export function PdfPreview({ src, version, staleNotice, emptyLabel = 'プレビ�
     }
     const ac = new AbortController();
     let cancelled = false;
-    let doc: pdfjs.PDFDocumentProxy | null = null;
+    let doc: PDFDocumentProxy | null = null;
     setStatus({ kind: 'loading' });
     (async () => {
       try {
-        const { blob } = await fetchBlob(src, ac.signal);
+        const [pdfjs, { blob }] = await Promise.all([loadPdfjs(), fetchBlob(src, ac.signal)]);
         const data = new Uint8Array(await blob.arrayBuffer());
         // PDF.js 5 は eval を使わない。PDF 内 JavaScript・外部動作は実行しない（canvas 描画のみ）
         doc = await pdfjs.getDocument({ data, disableAutoFetch: true }).promise;

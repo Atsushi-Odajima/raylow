@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import { useId, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { Link } from 'react-router';
 import { Icon, type IconName } from './Icon';
 
@@ -22,6 +22,7 @@ function classes(variant: Variant | undefined, small: boolean | undefined, block
 }
 
 export function Button({ variant, small, block, icon, disabledReason, busy, children, className, type = 'button', ...rest }: ButtonProps) {
+  const reasonId = useId();
   const disabled = !!disabledReason || !!busy;
   const btn = (
     <button
@@ -32,6 +33,7 @@ export function Button({ variant, small, block, icon, disabledReason, busy, chil
       aria-disabled={disabled || undefined}
       aria-busy={busy || undefined}
       title={disabledReason ?? rest.title}
+      aria-describedby={disabledReason && !busy ? reasonId : rest['aria-describedby']}
     >
       {busy ? <Icon name="spinner" label="処理中" size={small ? 16 : 20} /> : icon ? <Icon name={icon} size={small ? 16 : 20} /> : null}
       {children}
@@ -41,7 +43,7 @@ export function Button({ variant, small, block, icon, disabledReason, busy, chil
     return (
       <span className="btn-with-reason">
         {btn}
-        <span className="btn-reason aux" role="note">
+        <span id={reasonId} className="btn-reason aux" role="note">
           {disabledReason}
         </span>
       </span>

@@ -30,7 +30,7 @@ async function loadPacket(tx: Tx, id: string): Promise<Packet> {
     items: items.rows.map((it) => ({
       id: it.id as string, outputId: (it.output_id as string | null) ?? null, fileVersionId: (it.file_version_id as string | null) ?? null, evidenceId: (it.evidence_id as string | null) ?? null, displayNameRaw: it.display_name_raw as string, orderNo: it.order_no as number, externalOutputConfirmed: it.external_output_confirmed as boolean,
       kind: it.output_id ? (it.o_format === 'pdf' ? 'document_pdf' : 'document_docx') : it.evidence_id ? 'evidence_pdf' : 'file',
-      sourceLabel: it.output_id ? `${it.d_title as string}（${it.o_mode as string} ${it.o_format as string}）` : it.evidence_id ? `${it.e_label as string}　${it.f_name as string}` : (it.f_name as string) ?? '',
+      sourceLabel: it.output_id ? `${it.d_title as string}（${it.o_mode as string} ${it.o_format as string}）` : it.evidence_id ? `${it.e_label as string}\u3000${it.f_name as string}` : (it.f_name as string) ?? '',
       sha256: (it.o_sha as string | null) ?? (it.fv_sha as string | null) ?? null, confidential: (it.f_conf as boolean | null) ?? false,
       approved: it.output_id ? it.o_mode === 'final' && it.d_status === 'approved' && it.approved_revision_id === it.o_rev : null,
     })),
@@ -38,10 +38,17 @@ async function loadPacket(tx: Tx, id: string): Promise<Packet> {
   };
 }
 
-async function replaceItems(tx: Tx, packetId: string, orgId: string, matterId: string, items: Array<{ outputId?: string | null | undefined; fileVersionId?: string | null | undefined; evidenceId?: string | null | undefined; displayNameRaw: string; orderNo: number; externalOutputConfirmed: boolean }>): Promise<void> {
+async function replaceItems(tx: Tx, packetId: string, orgId: string, matterId: string, items: Array<{ draftId?: string | null | undefined; outputId?: string | null | undefined; fileVersionId?: string | null | undefined; evidenceId?: string | null | undefined; displayNameRaw: string; orderNo: number; externalOutputConfirmed: boolean }>): Promise<void> {
   await tx.query('DELETE FROM public.packet_items WHERE packet_id = $1', [packetId]);
   const seen = new Set<number>();
-  for (const it of items) {
+  for (const raw of items) {
+    const it = { ...raw };
+    if (!it.outputId && it.draftId) {
+      // 承認済み正式 PDF を解決（無ければ 422: 未完成項目へリンク）
+      const o = await tx.query<{ id: string }>(`SELECT o.id FROM public.drafts d JOIN public.draft_outputs o ON o.revision_id = d.approved_revision_id WHERE d.id = $1 AND d.matter_id = $2 AND d.status = 'approved' AND o.mode = 'final' AND o.format = 'pdf' AND o.status = 'ready' ORDER BY o.created_at DESC LIMIT 1`, [it.draftId, matterId]);
+      if (!o.rows[0]) throw validationFailed([{ field: 'items', code: 'draft_not_final', message: '承認済みの正式 PDF がない書類です。承認と正式出力を先に行ってください' }]);
+      it.outputId = o.rows[0].id;
+    }
     if (seen.has(it.orderNo)) throw validationFailed([{ field: 'items', code: 'duplicate_order', message: `順番 ${it.orderNo} が重複しています` }]);
     seen.add(it.orderNo);
     let fileVersionId = it.fileVersionId ?? null;
@@ -59,6 +66,7 @@ async function replaceItems(tx: Tx, packetId: string, orgId: string, matterId: s
       if (!f.rows[0] || f.rows[0].matter_id !== matterId) throw notFound();
     }
     if (!it.outputId && !fileVersionId) throw validationFailed([{ field: 'items', code: 'empty_item', message: '書類または資料を指定してください' }]);
+    if (fileVersionId && !it.fileVersionId) it.fileVersionId = fileVersionId;
     await tx.query('INSERT INTO public.packet_items (org_id, packet_id, output_id, file_version_id, evidence_id, order_no, display_name_raw, external_output_confirmed) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)', [orgId, packetId, it.outputId ?? null, fileVersionId, it.evidenceId ?? null, it.orderNo, it.displayNameRaw, it.externalOutputConfirmed]);
   }
 }
@@ -202,6 +210,10 @@ export async function packetRoutes(app: FastifyInstance): Promise<void> {
         `INSERT INTO public.dispatch_records (org_id, matter_id, packet_id, output_id, recipient_snapshot, method, sent_at, receipt_raw, receipt_file_id, received_documents_raw, status, recorded_by) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'recorded', $11) RETURNING id`,
         [m.rows[0].org_id, body.matterId, body.packetId ?? null, body.outputId ?? null, JSON.stringify(body.recipientSnapshot), body.methodNoteRaw ? `${body.method}:${body.methodNoteRaw}` : body.method, body.sentAt, body.receiptRaw, body.receiptFileId ?? null, body.receivedDocumentsRaw, actor.userId],
       );
+      if (body.packetId) {
+        // パックに含めた証拠は提出済み扱い（以後の改番は禁止。訂正は履歴付き別版）
+        await tx.query(`UPDATE public.evidence SET status = 'submitted' WHERE status = 'confirmed' AND id IN (SELECT evidence_id FROM public.packet_items WHERE packet_id = $1 AND evidence_id IS NOT NULL)`, [body.packetId]);
+      }
       await audit(tx, actor, { action: 'dispatch.recorded', targetType: 'dispatch_record', targetId: r.rows[0]!.id, matterId: body.matterId, details: { method: body.method } });
       const row = await tx.query<Row>(`${DISPATCH_SELECT} WHERE dr.id = $1`, [r.rows[0]!.id]);
       return dispatchOut(row.rows[0]!);

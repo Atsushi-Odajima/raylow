@@ -17,7 +17,6 @@ import {
   PartyInputSchema,
   type DispatchRecord,
   type Draft,
-  type Evidence,
   type MatterDetail,
   type MatterSummary,
 } from '@raylow/contracts';
@@ -34,6 +33,9 @@ export const matterKeys = {
 export type MatterInput = z.input<typeof MatterInputSchema>;
 export type PartyInput = z.input<typeof PartyInputSchema>;
 export type AgentInput = z.input<typeof AgentInputSchema>;
+/** 原本閲覧 GET /api/files/:id/content?version= には file id が必要。EvidenceSchema に fileId が無いため、API が返す場合に読む */
+const EvidenceWithFileSchema = EvidenceSchema.extend({ fileId: z.string().uuid().nullable().optional() });
+export type EvidenceWithFile = z.infer<typeof EvidenceWithFileSchema>;
 
 export function useMatters(q: { q?: string | undefined; status?: string | undefined; limit?: number | undefined }, enabled = true) {
   const params: QueryParams = { q: q.q, status: q.status, limit: q.limit ?? 50 };
@@ -47,7 +49,7 @@ export function useMatter(id: string | null | undefined) {
   return useQuery({ queryKey: matterKeys.detail(id ?? ''), queryFn: () => apiRequest<MatterDetail>(`/api/matters/${id}`, { schema: MatterDetailSchema }), enabled: !!id });
 }
 export function useMatterEvidence(id: string | null | undefined) {
-  return useQuery({ queryKey: matterKeys.evidence(id ?? ''), queryFn: () => apiRequest<Evidence[]>(`/api/matters/${id}/evidence`, { schema: z.array(EvidenceSchema) }), enabled: !!id });
+  return useQuery({ queryKey: matterKeys.evidence(id ?? ''), queryFn: () => apiRequest<EvidenceWithFile[]>(`/api/matters/${id}/evidence`, { schema: z.array(EvidenceWithFileSchema) }), enabled: !!id });
 }
 export function useMatterDispatches(id: string | null | undefined) {
   return useQuery({ queryKey: matterKeys.dispatches(id ?? ''), queryFn: () => apiRequest<DispatchRecord[]>(`/api/matters/${id}/dispatches`, { schema: z.array(DispatchRecordSchema) }), enabled: !!id });

@@ -66,7 +66,7 @@ export function parseJapaneseDate(raw: string): ParsedJapaneseDate {
   const warnings: string[] = [];
   const base: ParsedJapaneseDate = { raw, iso: null, precision: 'unknown', approximate: false, era: null, warnings, needsConfirmation: false };
   if (raw == null) return base;
-  let s = foldFullwidthDigits(raw).replace(/[\s　]+/g, '');
+  let s = foldFullwidthDigits(raw).replace(/[\s\u3000]+/g, '');
   const approximate = /頃|ころ|ごろ|約/.test(s);
   if (approximate) s = s.replace(/頃|ころ|ごろ|約/g, '');
 

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { z } from 'zod';
+import type { z } from 'zod';
 import { BatchCreateSchema, BatchItemSchema, BatchSchema, type Batch } from '@raylow/contracts';
 import { apiRequest } from '../lib/apiClient';
 
@@ -10,8 +10,17 @@ export type BatchItem = z.infer<typeof BatchItemSchema>;
 export function createBatch(input: BatchCreateInput): Promise<Batch> {
   return apiRequest<Batch>('/api/batches', { method: 'POST', body: BatchCreateSchema.parse(input), schema: BatchSchema });
 }
-export function useBatch(id: string | null | undefined, refetchInterval: number | false) {
-  return useQuery({ queryKey: batchKeys.detail(id ?? ''), queryFn: () => apiRequest<Batch>(`/api/batches/${id}`, { schema: BatchSchema }), enabled: !!id, refetchInterval });
+export function isBatchActive(b: Batch | undefined | null): boolean {
+  return !!b && (b.status === 'queued' || b.status === 'running');
+}
+/** 進行中は 2 秒間隔で追う */
+export function useBatch(id: string | null | undefined) {
+  return useQuery({
+    queryKey: batchKeys.detail(id ?? ''),
+    queryFn: () => apiRequest<Batch>(`/api/batches/${id}`, { schema: BatchSchema }),
+    enabled: !!id,
+    refetchInterval: (q) => (isBatchActive(q.state.data) ? 2000 : false),
+  });
 }
 export function useCancelBatch() {
   const qc = useQueryClient();

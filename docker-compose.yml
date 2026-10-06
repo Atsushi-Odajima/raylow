@@ -1,0 +1,98 @@
+# RayLaw v2 Docker Compose（検証環境向け）。
+# 開発: `docker compose up -d scanner document-worker`（DB は Supabase local または外部 Postgres）
+# 検証配信: `RAYLOW_DOMAIN=example.test docker compose --profile full up -d`
+# 本番資格情報は .env に置き、公開 repo へ入れない。
+services:
+  scanner:
+    image: clamav/clamav:1.4.3
+    container_name: raylow-scanner
+    restart: unless-stopped
+    networks: [raylow-internal]
+    healthcheck:
+      test: ["CMD", "clamdcheck.sh"]
+      interval: 60s
+      timeout: 10s
+      retries: 5
+    volumes:
+      - clamav-db:/var/lib/clamav
+
+  document-worker:
+    build:
+      context: .
+      dockerfile: infra/docker/worker.Dockerfile
+    container_name: raylow-document-worker
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL_SERVICE: ${DATABASE_URL_SERVICE_DOCKER:-${DATABASE_URL_SERVICE}}
+      CLAMD_HOST: scanner
+      CLAMD_PORT: "3310"
+      BLOB_LOCAL_DIR: /app/.data/blobs
+      DEV_ALLOW_UNSCANNED: "false"
+    volumes:
+      - blobs:/app/.data/blobs
+      - worker-tmp:/app/.data/tmp
+    networks: [raylow-internal]
+    depends_on:
+      scanner:
+        condition: service_healthy
+    read_only: false
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    mem_limit: 2g
+    cpus: 2.0
+    # 変換ソフトから外部 URL を取得させない: internal network のみ（internet 無し）
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  api:
+    profiles: [full]
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+    container_name: raylow-api
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      API_HOST: 0.0.0.0
+      API_PORT: "3001"
+      BLOB_LOCAL_DIR: /app/.data/blobs
+      COOKIE_SECURE: "true"
+    volumes:
+      - blobs:/app/.data/blobs
+    networks: [raylow-internal, raylow-edge]
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+    mem_limit: 2g
+
+  web:
+    profiles: [full]
+    build:
+      context: .
+      dockerfile: infra/docker/web.Dockerfile
+    container_name: raylow-web
+    restart: unless-stopped
+    environment:
+      RAYLOW_DOMAIN: ${RAYLOW_DOMAIN:-localhost}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - caddy-data:/data
+      - caddy-config:/config
+    networks: [raylow-edge]
+    depends_on: [api]
+
+networks:
+  raylow-internal:
+    internal: true
+  raylow-edge:
+
+volumes:
+  clamav-db:
+  blobs:
+  worker-tmp:
+  caddy-data:
+  caddy-config:

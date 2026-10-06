@@ -1,5 +1,7 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { z } from 'zod';
+import type {
+  SearchQuerySchema} from '@raylow/contracts';
 import {
   AuditEventSchema,
   ExportRequestSchema,
@@ -9,7 +11,6 @@ import {
   ImportPreviewResponseSchema,
   OrgSettingsSchema,
   OrgSettingsUpdateSchema,
-  SearchQuerySchema,
   SearchResultSchema,
   type AuditEvent,
 } from '@raylow/contracts';

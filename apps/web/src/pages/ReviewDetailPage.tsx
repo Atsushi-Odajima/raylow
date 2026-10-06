@@ -13,7 +13,7 @@ import { RECIPIENT_TYPE_LABEL, REVIEW_STATUS_LABEL, draftStatusLabel, label } fr
 import { useIsDesktop } from '../hooks/useMediaQuery';
 import { Alert } from '../components/Alert';
 import { AstView } from '../components/AstView';
-import { Badge, SampleOnlyBadge, statusTone } from '../components/Badge';
+import { Badge, statusTone } from '../components/Badge';
 import { Button, LinkButton } from '../components/Button';
 import { DiffView } from '../components/DiffView';
 import { Field } from '../components/Field';
@@ -243,7 +243,6 @@ export function ReviewDetailPage() {
             </div>
           </section>
         ) : null}
-        {d.draft.status === 'approved' ? <div><SampleOnlyBadge /></div> : null}
       </div>
     </div>
   );

@@ -1,0 +1,26 @@
+# RayLaw reverse proxy。RAYLOW_DOMAIN に実ドメインを設定すると Let's Encrypt で TLS を自動取得する。
+# iPhone PWA は HTTPS 配信が必須。localhost とは別物なので、利用者管理下の検証環境ドメインを使う。
+{$RAYLOW_DOMAIN:localhost} {
+	encode gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		X-Frame-Options "DENY"
+		Content-Security-Policy "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self'; worker-src 'self' blob:; frame-ancestors 'none'; object-src 'none'; base-uri 'self'"
+		-Server
+	}
+	handle /api/* {
+		reverse_proxy api:3001 {
+			header_up X-Request-Id {http.request.uuid}
+		}
+		header Cache-Control "no-store"
+	}
+	handle {
+		root * /srv/web
+		@sw path /sw.js /manifest.webmanifest /index.html
+		header @sw Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+}

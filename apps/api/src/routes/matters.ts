@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { AgentInputSchema, BarrierAddSchema, MatterAcceptanceSchema, MatterInputSchema, MatterLegalHoldSchema, MatterListQuerySchema, MatterStatusChangeSchema, MatterUpdateSchema, MemberAddSchema, PartyInputSchema, PartyUpdateSchema, type MatterDetail, type MatterSummary } from '@raylow/contracts';
 import { buildSearchKey } from '@raylow/japanese-text';
+import { randomUUID } from 'node:crypto';
 import { withUserTx, type Actor, type Tx } from '../db/pool.js';
 import { ApiError, conflict, forbidden, notFound, versionConflict } from '../errors.js';
 import { requireActor } from '../plugins/auth.js';
@@ -96,12 +97,13 @@ export async function matterRoutes(app: FastifyInstance): Promise<void> {
     const actor = requireActor(req);
     const body = parseOrThrow(MatterInputSchema, req.body);
     const detail = await withUserTx(actor, async (tx) => {
-      const r = await tx.query<Row>(
-        `INSERT INTO public.matters (org_id, title_raw, case_number_raw, case_number_struct, court_raw, court_department_raw, scope_raw, lead_lawyer_id, external_id, search_key, created_by)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
-        [actor.orgId, body.titleRaw, body.caseNumberRaw, body.caseNumberStruct ? JSON.stringify(body.caseNumberStruct) : null, body.courtRaw, body.courtDepartmentRaw, body.scopeRaw, body.leadLawyerId ?? null, body.externalId ?? null, matterSearchKey(body), actor.userId],
+      // RLS 下では INSERT ... RETURNING が自分に見えない行（member 付与前）で失敗するため id を生成して挿入する
+      const id = randomUUID();
+      await tx.query(
+        `INSERT INTO public.matters (id, org_id, title_raw, case_number_raw, case_number_struct, court_raw, court_department_raw, scope_raw, lead_lawyer_id, external_id, search_key, created_by)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+        [id, actor.orgId, body.titleRaw, body.caseNumberRaw, body.caseNumberStruct ? JSON.stringify(body.caseNumberStruct) : null, body.courtRaw, body.courtDepartmentRaw, body.scopeRaw, body.leadLawyerId ?? null, body.externalId ?? null, matterSearchKey(body), actor.userId],
       );
-      const id = r.rows[0]!.id as string;
       // 最初の案件作成者に membership を付与
       await tx.query('INSERT INTO public.matter_members (matter_id, user_id, org_id, can_edit, approved_by, created_by) VALUES ($1, $2, $3, true, $2, $2)', [id, actor.userId, actor.orgId]);
       // lead lawyer にも付与

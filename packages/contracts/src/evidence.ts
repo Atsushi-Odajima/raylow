@@ -10,6 +10,7 @@ export const EvidenceSchema = z.object({
   canonicalNumber: z.string(),
   displayLabel: z.string(),
   fileVersionId: UuidSchema.nullable(),
+  fileId: UuidSchema.nullable().optional(),
   fileName: z.string().nullable(),
   titleRaw: z.string(),
   authorRaw: z.string(),

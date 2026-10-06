@@ -122,7 +122,7 @@ export async function exportJob(ctx: JobContext, tx: Tx): Promise<Record<string,
     if (full) {
       for (const t of ['organizations', 'memberships', 'app_users', 'office_profiles', 'lawyers', 'contacts', 'contact_aliases', 'contact_versions', 'templates', 'template_versions', 'phrase_libraries', 'phrase_versions', 'renderer_profiles', 'court_profiles', 'jobs', 'outbox']) {
         const hasOrg = !['app_users'].includes(t);
-        const where = t === 'app_users' ? 'id IN (SELECT user_id FROM public.memberships WHERE org_id = $1)' : t === 'renderer_profiles' || t === 'court_profiles' ? '(org_id = $1 OR org_id IS NULL)' : 'org_id = $1';
+        const where = t === 'app_users' ? 'id IN (SELECT user_id FROM public.memberships WHERE org_id = $1)' : t === 'organizations' ? 'id = $1' : t === 'renderer_profiles' || t === 'court_profiles' ? '(org_id = $1 OR org_id IS NULL)' : 'org_id = $1';
         void hasOrg;
         dump[t] = (await tx.query<Row>(`SELECT * FROM public.${t} WHERE ${where}`, [orgId])).rows;
       }

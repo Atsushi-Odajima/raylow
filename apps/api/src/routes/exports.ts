@@ -46,6 +46,8 @@ export async function exportRoutes(app: FastifyInstance): Promise<void> {
       const j = await tx.query<Row>('SELECT * FROM public.jobs WHERE id = $1 AND type = $2', [jobId, 'export']);
       const job = j.rows[0];
       if (!job) throw notFound();
+      // 要求者本人のみ取得できる（admin の全量バックアップを他メンバーが取得できないようにする）
+      if (job.created_by !== actor.userId) throw notFound();
       if (job.state !== 'succeeded') throw conflict('エクスポートはまだ完了していません');
       const result = (job.result as { fileId?: string; fileName?: string; mime?: string }) ?? {};
       if (!result.fileId) throw conflict('エクスポート結果がありません');
@@ -114,14 +116,18 @@ export async function exportRoutes(app: FastifyInstance): Promise<void> {
         }
       } else if (p.kind === 'matters') {
         for (const r of p.rows) {
-          const up = await tx.query<{ inserted: boolean; id: string }>(
-            `INSERT INTO public.matters (org_id, title_raw, case_number_raw, court_raw, status, scope_raw, external_id, search_key, created_by) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-             ON CONFLICT (org_id, external_id) WHERE external_id IS NOT NULL DO UPDATE SET title_raw = EXCLUDED.title_raw, case_number_raw = EXCLUDED.case_number_raw, court_raw = EXCLUDED.court_raw, status = EXCLUDED.status, scope_raw = EXCLUDED.scope_raw, search_key = EXCLUDED.search_key
-             RETURNING (xmax = 0) AS inserted, id`,
-            [actor.orgId, r.title_raw, r.case_number_raw ?? '', r.court_raw ?? '', r.status ?? 'active', r.scope_raw ?? '', r.external_id, matterSearchKey({ titleRaw: r.title_raw ?? '', caseNumberRaw: r.case_number_raw ?? '', courtRaw: r.court_raw ?? '' }), actor.userId],
-          );
-          const row = up.rows[0]!;
-          if (row.inserted) { inserted++; await tx.query('INSERT INTO public.matter_members (matter_id, user_id, org_id, can_edit, approved_by, created_by) VALUES ($1, $2, $3, true, $2, $2) ON CONFLICT DO NOTHING', [row.id, actor.userId, actor.orgId]); } else updated++;
+          const key = matterSearchKey({ titleRaw: r.title_raw ?? '', caseNumberRaw: r.case_number_raw ?? '', courtRaw: r.court_raw ?? '' });
+          // RLS 下では INSERT ... RETURNING が自分に見えない行で失敗するため、id を生成して挿入し、既存は SELECT で判定する
+          const existing = await tx.query<{ id: string }>('SELECT id FROM public.matters WHERE org_id = $1 AND external_id = $2', [actor.orgId, r.external_id]);
+          if (existing.rows[0]) {
+            await tx.query(`UPDATE public.matters SET title_raw = $2, case_number_raw = $3, court_raw = $4, status = $5, scope_raw = $6, search_key = $7 WHERE id = $1`, [existing.rows[0].id, r.title_raw, r.case_number_raw ?? '', r.court_raw ?? '', r.status || 'active', r.scope_raw ?? '', key]);
+            updated++;
+            continue;
+          }
+          const id = randomUUID();
+          await tx.query(`INSERT INTO public.matters (id, org_id, title_raw, case_number_raw, court_raw, status, scope_raw, external_id, search_key, created_by) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`, [id, actor.orgId, r.title_raw, r.case_number_raw ?? '', r.court_raw ?? '', r.status || 'active', r.scope_raw ?? '', r.external_id, key, actor.userId]);
+          await tx.query('INSERT INTO public.matter_members (matter_id, user_id, org_id, can_edit, approved_by, created_by) VALUES ($1, $2, $3, true, $2, $2)', [id, actor.userId, actor.orgId]);
+          inserted++;
         }
       } else {
         for (const r of p.rows) {

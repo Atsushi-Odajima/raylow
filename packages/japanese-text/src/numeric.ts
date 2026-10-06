@@ -15,7 +15,7 @@ export interface MoneyValue {
 export function parseMoneyJpy(raw: string): MoneyValue {
   const warnings: string[] = [];
   let s = foldFullwidthDigits(raw);
-  s = s.replace(/[\s　]/g, '');
+  s = s.replace(/[\s\u3000]/g, '');
   s = s.replace(/^[¥￥\\]/, '').replace(/円$/, '');
   s = s.replace(/[,，]/g, '');
   if (/^\d+$/.test(s)) {
@@ -30,7 +30,7 @@ export function parseMoneyJpy(raw: string): MoneyValue {
 
 /** 全角数字 "１２３" → 候補 123。数値欄の parse 候補にだけ使う */
 export function parseIntegerCandidate(raw: string): number | null {
-  const s = foldFullwidthDigits(raw).replace(/[\s　,，]/g, '');
+  const s = foldFullwidthDigits(raw).replace(/[\s\u3000,，]/g, '');
   if (!/^-?\d+$/.test(s)) return null;
   const n = Number(s);
   return Number.isSafeInteger(n) ? n : null;

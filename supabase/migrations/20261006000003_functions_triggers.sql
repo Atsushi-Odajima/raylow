@@ -61,9 +61,11 @@ $$;
 GRANT EXECUTE ON FUNCTION app.current_user_id(), app.current_request_id(), app.is_org_member(uuid), app.org_role(uuid), app.can_access_matter(uuid), app.can_edit_matter(uuid), app.is_assigned_lawyer(uuid) TO authenticated, service_role;
 
 -- ---------- cross-org FK ガード ----------
+-- SECURITY DEFINER: 同一 transaction で挿入直後（member 付与前）の行も参照できるよう RLS を迂回して org_id を読む。
+-- search_path は固定し、参照は schema-qualified。
 -- 使い方: CREATE TRIGGER ... EXECUTE FUNCTION app.tg_assert_same_org('contacts', 'contact_id')
 CREATE OR REPLACE FUNCTION app.tg_assert_same_org() RETURNS trigger
-LANGUAGE plpgsql
+LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE
@@ -136,7 +138,7 @@ CREATE TRIGGER jobs_org_matter BEFORE INSERT OR UPDATE ON public.jobs FOR EACH R
 
 -- 証拠: 同一案件内で file_version の案件一致
 CREATE OR REPLACE FUNCTION app.tg_evidence_file_matter() RETURNS trigger
-LANGUAGE plpgsql
+LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE fm uuid;
@@ -187,7 +189,22 @@ $$;
 CREATE TRIGGER draft_revisions_immutable BEFORE UPDATE OR DELETE ON public.draft_revisions FOR EACH ROW EXECUTE FUNCTION app.tg_immutable_row();
 CREATE TRIGGER contact_versions_immutable BEFORE UPDATE OR DELETE ON public.contact_versions FOR EACH ROW EXECUTE FUNCTION app.tg_immutable_row();
 CREATE TRIGGER audit_events_append_only BEFORE UPDATE OR DELETE ON public.audit_events FOR EACH ROW EXECUTE FUNCTION app.tg_immutable_row();
-CREATE TRIGGER file_versions_immutable BEFORE UPDATE OR DELETE ON public.file_versions FOR EACH ROW EXECUTE FUNCTION app.tg_immutable_row();
+-- file_versions: bytes/hash/kind は不変。encoding_name（検査で判明するテキスト添付の文字コード）だけ後から設定できる
+CREATE OR REPLACE FUNCTION app.tg_file_versions_guard() RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = pg_catalog, pg_temp
+AS $$
+BEGIN
+  IF TG_OP = 'DELETE' THEN
+    RAISE EXCEPTION 'immutable_row: file_versions cannot be deleted' USING ERRCODE = '23514';
+  END IF;
+  IF NEW.storage_key IS DISTINCT FROM OLD.storage_key OR NEW.sha256 IS DISTINCT FROM OLD.sha256 OR NEW.size IS DISTINCT FROM OLD.size OR NEW.kind IS DISTINCT FROM OLD.kind OR NEW.file_id IS DISTINCT FROM OLD.file_id OR NEW.revision IS DISTINCT FROM OLD.revision OR NEW.derived_from_id IS DISTINCT FROM OLD.derived_from_id OR NEW.org_id IS DISTINCT FROM OLD.org_id THEN
+    RAISE EXCEPTION 'immutable_row: file_versions bytes/identity cannot change' USING ERRCODE = '23514';
+  END IF;
+  RETURN NEW;
+END
+$$;
+CREATE TRIGGER file_versions_immutable BEFORE UPDATE OR DELETE ON public.file_versions FOR EACH ROW EXECUTE FUNCTION app.tg_file_versions_guard();
 
 -- draft_outputs: bytes を上書きしない（status 変更のみ許可）
 CREATE OR REPLACE FUNCTION app.tg_draft_outputs_guard() RETURNS trigger
@@ -208,7 +225,7 @@ CREATE TRIGGER draft_outputs_guard BEFORE UPDATE OR DELETE ON public.draft_outpu
 
 -- 最後の admin 削除禁止
 CREATE OR REPLACE FUNCTION app.tg_keep_last_admin() RETURNS trigger
-LANGUAGE plpgsql
+LANGUAGE plpgsql SECURITY DEFINER
 SET search_path = pg_catalog, pg_temp
 AS $$
 DECLARE remaining integer;

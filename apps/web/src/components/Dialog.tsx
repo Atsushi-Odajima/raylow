@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { Button } from './Button';
 import { Icon } from './Icon';
 
@@ -8,6 +8,8 @@ export interface DialogProps {
   onClose?: (() => void) | undefined;
   /** 閉じられない（再ログイン等） */
   modalOnly?: boolean | undefined;
+  /** 背景を不透明にして旧画面を隠す（セッション切れ等） */
+  cover?: boolean | undefined;
   wide?: boolean | undefined;
   children: ReactNode;
   actions?: ReactNode | undefined;
@@ -15,8 +17,9 @@ export interface DialogProps {
 }
 
 /** native <dialog> によるモーダル（フォーカス閉じ込み・Esc）。radius 8px・影は dialog のみ */
-export function Dialog({ open, title, onClose, modalOnly, wide, children, actions, describedBy }: DialogProps) {
+export function Dialog({ open, title, onClose, modalOnly, cover, wide, children, actions, describedBy }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
@@ -45,11 +48,11 @@ export function Dialog({ open, title, onClose, modalOnly, wide, children, action
     return () => el.removeEventListener('cancel', onCancel);
   }, [modalOnly, onClose]);
   return (
-    <dialog ref={ref} className={['dialog', wide ? 'dialog-wide' : ''].join(' ').trim()} aria-labelledby="dlg-title" aria-describedby={describedBy}>
+    <dialog ref={ref} className={['dialog', wide ? 'dialog-wide' : '', cover ? 'dialog--cover' : ''].join(' ').trim()} aria-labelledby={titleId} aria-describedby={describedBy}>
       {open ? (
         <div className="dialog__inner">
           <div className="dialog__head">
-            <h2 id="dlg-title">{title}</h2>
+            <h2 id={titleId}>{title}</h2>
             {!modalOnly && onClose ? (
               <Button variant="quiet" small onClick={onClose} aria-label="閉じる">
                 <Icon name="close" size={20} />

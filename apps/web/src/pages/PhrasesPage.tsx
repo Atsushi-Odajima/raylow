@@ -2,14 +2,14 @@
  * S12 /phrases: 用途 → 本文 → 承認状態。PC はリストから全文編集、mobile は独立編集画面。
  * 旧文例を使う草案には更新候補のみ（自動で書き換えない）。
  */
-import { useEffect, useState, useSyncExternalStore } from 'react';
+import { useEffect, useState } from 'react';
 import type { Phrase } from '@raylow/contracts';
 import { TemplateKindSchema } from '@raylow/template-schema';
 import { useAddPhraseVersion, useApprovePhraseVersion, useCreatePhrase, usePhrase, usePhrases } from '../api/templates';
 import { isApiError } from '../lib/apiClient';
 import { formatDateTime } from '../lib/format';
 import { PHRASE_STATUS_LABEL, TEMPLATE_KIND_LABEL, label, templateKindLabel } from '../lib/labels';
-import { sessionStore } from '../lib/session';
+import { useSession } from '../lib/session';
 import { useIsMobile } from '../hooks/useMediaQuery';
 import { Alert } from '../components/Alert';
 import { Badge, statusTone } from '../components/Badge';
@@ -92,7 +92,7 @@ function NewPhraseForm({ onCreated }: { onCreated: (p: Phrase) => void }) {
 }
 
 function PhraseEditor({ id }: { id: string }) {
-  const session = useSyncExternalStore(sessionStore.subscribe.bind(sessionStore), sessionStore.getState.bind(sessionStore), sessionStore.getState.bind(sessionStore));
+  const session = useSession();
   const isLawyer = session.info?.role === 'lawyer';
   const q = usePhrase(id);
   const addVersion = useAddPhraseVersion();

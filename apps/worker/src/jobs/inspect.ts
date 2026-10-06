@@ -46,9 +46,7 @@ export async function inspectTemplateJob(ctx: JobContext, tx: Tx): Promise<Recor
   const report = { ok: rep.ok && !issues.some((i) => i.severity === 'error'), issues, tags: rep.tags, stats: { ...rep.stats, unmappedKeys: unmapped }, residualTextCandidates: rep.residualTextCandidates, inspectorVersion: rep.inspectorVersion };
   await tx.query(`UPDATE public.template_versions SET inspection_report = $2 WHERE id = $1`, [p.templateVersionId, JSON.stringify(report)]);
   await tx.query(`UPDATE public.files SET scan_status = CASE WHEN $2 THEN 'clean' ELSE 'rejected' END, scan_report = $3 WHERE id = $1 AND scan_status IN ('quarantine','scanning')`, [t.file_id, rep.ok, JSON.stringify({ inspector: rep.inspectorVersion, ok: rep.ok, errors: rep.issues.filter((i) => i.severity === 'error').length })]);
-  if (!rep.ok) {
-    // 構造的に拒否された書式は失敗として修正導線へ（自動再試行しない）
-    throw new JobFailure('template_rejected', `対応外要素があります: ${rep.issues.filter((i) => i.severity === 'error').map((i) => `${i.code}@${i.location ?? ''}`).join(', ')}`, false, { report });
-  }
-  return { ok: report.ok, tagCount: rep.tags.length, unmappedKeys: unmapped, errors: issues.filter((i) => i.severity === 'error').length };
+  // 構造的に拒否された書式でも検査 job 自体は完了させ、報告（位置・理由・修正手順）を template_versions に残す。
+  // 自動再試行はせず、利用者が修正したコピーを再登録する（修正導線）。
+  return { templateVersionId: p.templateVersionId, ok: report.ok, rejected: !rep.ok, tagCount: rep.tags.length, unmappedKeys: unmapped, errors: issues.filter((i) => i.severity === 'error').length, errorCodes: issues.filter((i) => i.severity === 'error').map((i) => `${i.code}@${i.location ?? ''}`) };
 }

@@ -93,6 +93,8 @@ export async function reviewRoutes(app: FastifyInstance): Promise<void> {
         const pdf = await tx.query<{ sha256: string }>(`SELECT sha256 FROM public.draft_outputs WHERE revision_id = $1 AND format = 'pdf' AND mode = 'draft' AND status = 'ready' ORDER BY created_at DESC LIMIT 1`, [revision.id]);
         if (!pdf.rows[0] || pdf.rows[0].sha256 !== row.target_output_pdf_sha256) throw new ApiError(409, 'hash_stale', '最終 PDF の hash が依頼時と一致しません。再生成してください');
         if (body.targetOutputPdfSha256 && body.targetOutputPdfSha256 !== pdf.rows[0].sha256) throw new ApiError(409, 'hash_stale', 'PDF hash が一致しません');
+        const docx = await tx.query<{ sha256: string }>(`SELECT sha256 FROM public.draft_outputs WHERE revision_id = $1 AND format = 'docx' AND mode = 'draft' AND status = 'ready' ORDER BY created_at DESC LIMIT 1`, [revision.id]);
+        if (row.target_output_docx_sha256 && docx.rows[0]?.sha256 !== row.target_output_docx_sha256) throw new ApiError(409, 'hash_stale', '出力 DOCX の hash が依頼時と一致しません。再生成してください');
         const tv = await tx.query<{ status: string; docx_sha256: string }>('SELECT status, docx_sha256 FROM public.template_versions WHERE id = $1', [revision.templateVersionId]);
         if (tv.rows[0]?.status !== 'published') throw conflict('書式版が公開状態ではありません');
         const report = await buildPreflight(tx, d, revision);

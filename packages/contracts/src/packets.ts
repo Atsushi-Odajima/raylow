@@ -2,6 +2,8 @@ import { z } from 'zod';
 import { ExpectedVersionSchema, RawText, TimestampSchema, UuidSchema } from './common.js';
 
 export const PacketItemInputSchema = z.object({
+  /** 草案 ID を指定すると承認済み正式 PDF 出力を server が解決する */
+  draftId: UuidSchema.nullable().optional(),
   outputId: UuidSchema.nullable().optional(),
   fileVersionId: UuidSchema.nullable().optional(),
   evidenceId: UuidSchema.nullable().optional(),

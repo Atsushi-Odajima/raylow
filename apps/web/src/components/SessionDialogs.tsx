@@ -2,12 +2,12 @@
  * 401 → 再ログインダイアログ（再ログイン後に権限を再確認し、未保存状態を説明）。
  * mfa_required → 認証コード再確認（step-up）ダイアログ。
  */
-import { useState, useSyncExternalStore } from 'react';
+import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 import { stepUp } from '../api/auth';
 import { isApiError } from '../lib/apiClient';
-import { sessionStore } from '../lib/session';
+import { sessionStore, useSession } from '../lib/session';
 import { unsavedRegistry } from '../lib/unsaved';
 import { Alert } from './Alert';
 import { Button } from './Button';
@@ -17,7 +17,7 @@ import { Input } from './Input';
 import { LoginForm } from './LoginForm';
 
 export function SessionDialogs() {
-  const state = useSyncExternalStore(sessionStore.subscribe.bind(sessionStore), sessionStore.getState.bind(sessionStore), sessionStore.getState.bind(sessionStore));
+  const state = useSession();
   const qc = useQueryClient();
   const navigate = useNavigate();
   const [code, setCode] = useState('');
@@ -28,7 +28,7 @@ export function SessionDialogs() {
 
   if (state.expired === 'unauthorized') {
     return (
-      <Dialog open title="セッションが切れました" modalOnly describedBy="sess-desc">
+      <Dialog open title="セッションが切れました" modalOnly cover describedBy="sess-desc">
         <div id="sess-desc" className="stack-s">
           <Alert kind="warning" title={hasUnsaved ? '未保存の入力があります' : '再ログインが必要です'}>
             {hasUnsaved

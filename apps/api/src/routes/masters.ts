@@ -251,7 +251,7 @@ export async function masterRoutes(app: FastifyInstance): Promise<void> {
   // ---------- members ----------
   const memberRows = async (tx: Tx, orgId: string): Promise<Member[]> => {
     const r = await tx.query<Row>(
-      `SELECT m.user_id, m.role, m.status, u.display_name_raw, u.email_raw, l.id AS lawyer_id FROM public.memberships m JOIN public.app_users u ON u.id = m.user_id LEFT JOIN public.lawyers l ON l.org_id = m.org_id AND l.user_id = m.user_id WHERE m.org_id = $1 ORDER BY m.created_at`,
+      `SELECT m.user_id, m.role, m.status, m.version, u.display_name_raw, u.email_raw, l.id AS lawyer_id FROM public.memberships m JOIN public.app_users u ON u.id = m.user_id LEFT JOIN public.lawyers l ON l.org_id = m.org_id AND l.user_id = m.user_id WHERE m.org_id = $1 ORDER BY m.created_at`,
       [orgId],
     );
     const ids = r.rows.map((x) => x.user_id as string);
@@ -259,7 +259,7 @@ export async function masterRoutes(app: FastifyInstance): Promise<void> {
       const e = await stx.query<{ user_id: string }>('SELECT user_id FROM private.mfa_totp WHERE enrolled_at IS NOT NULL AND user_id = ANY($1::uuid[])', [ids]);
       return new Set(e.rows.map((x) => x.user_id));
     });
-    return r.rows.map((x) => ({ userId: x.user_id as string, displayName: x.display_name_raw as string, email: x.email_raw as string, role: x.role as Member['role'], status: x.status as Member['status'], lawyerId: (x.lawyer_id as string | null) ?? null, mfaEnrolled: enrolled.has(x.user_id as string) }));
+    return r.rows.map((x) => ({ userId: x.user_id as string, displayName: x.display_name_raw as string, email: x.email_raw as string, role: x.role as Member['role'], status: x.status as Member['status'], lawyerId: (x.lawyer_id as string | null) ?? null, mfaEnrolled: enrolled.has(x.user_id as string), version: x.version as number }));
   };
 
   app.get('/api/members', async (req, reply) => {

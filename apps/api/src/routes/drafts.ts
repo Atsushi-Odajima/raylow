@@ -20,7 +20,7 @@ type Row = Record<string, unknown>;
 async function assertLeaseOrFree(tx: Tx, actor: Actor, draftId: string): Promise<void> {
   const l = await tx.query<{ user_id: string; display_name_raw: string; expires_at: string }>('SELECT l.user_id, u.display_name_raw, l.expires_at FROM public.edit_leases l JOIN public.app_users u ON u.id = l.user_id WHERE l.draft_id = $1 AND l.expires_at > now()', [draftId]);
   const row = l.rows[0];
-  if (row && row.user_id !== actor.userId) throw new ApiError(409, 'lease_held', `${row.display_name_raw} が編集中です（${row.expires_at} まで）。引継ぎには理由が必要です`, { details: { holderUserId: row.user_id, expiresAt: row.expires_at } });
+  if (row && row.user_id !== actor.userId) throw new ApiError(409, 'lease_held', `${row.display_name_raw} が編集中です（${row.expires_at} まで）。引継ぎには理由が必要です`, { details: { holderUserId: row.user_id, holderName: row.display_name_raw, userId: row.user_id, userName: row.display_name_raw, expiresAt: row.expires_at } });
 }
 
 async function insertRevision(tx: Tx, actor: Actor, draft: Row, templateVersionId: string, snapshot: DraftSnapshot, ast: DocumentAST, sourceRevisionId: string | null, kind: 'app' | 'external_edit' = 'app', externalFileVersionId: string | null = null): Promise<Row> {
@@ -39,7 +39,8 @@ async function setCurrentRevision(tx: Tx, actor: Actor, draft: Row, revision: Ro
   const prevStatus = draft.status as string;
   const nextStatus = prevStatus === 'approved' || prevStatus === 'in_review' || prevStatus === 'ready_for_review' || prevStatus === 'changes_requested' || prevStatus === 'rendering' ? 'draft' : prevStatus;
   if (!canTransitionDraft(prevStatus as 'draft', nextStatus as 'draft') && prevStatus !== nextStatus) throw conflict(`状態 ${prevStatus} からは編集できません`);
-  const r = await tx.query<{ version: number }>(`UPDATE public.drafts SET current_revision_id = $3, status = $4 WHERE id = $1 AND version = $2 RETURNING version`, [draft.id, expectedVersion, revision.id, nextStatus]);
+  // 編集・宛先変更・書式変更・外部編集版追加で承認は失効する（approved_revision_id を外す。旧 revision の出力 bytes は不変のまま残る）
+  const r = await tx.query<{ version: number }>(`UPDATE public.drafts SET current_revision_id = $3, status = $4, approved_revision_id = CASE WHEN $4 = 'draft' THEN NULL ELSE approved_revision_id END WHERE id = $1 AND version = $2 RETURNING version`, [draft.id, expectedVersion, revision.id, nextStatus]);
   if (!r.rows[0]) {
     const cur = await tx.query<{ version: number }>('SELECT version FROM public.drafts WHERE id = $1', [draft.id]);
     if (!cur.rows[0]) throw notFound();
@@ -152,7 +153,7 @@ export async function draftRoutes(app: FastifyInstance): Promise<void> {
       const cur = await tx.query<{ user_id: string; display_name_raw: string; expires_at: string }>('SELECT l.user_id, u.display_name_raw, l.expires_at FROM public.edit_leases l JOIN public.app_users u ON u.id = l.user_id WHERE l.draft_id = $1 FOR UPDATE', [id]);
       const held = cur.rows[0];
       if (held && held.user_id !== actor.userId && new Date(held.expires_at).getTime() > Date.now()) {
-        if (!body.takeoverReason) throw new ApiError(409, 'lease_held', `${held.display_name_raw} が編集中です。引継ぐには理由を入力してください`, { details: { holderUserId: held.user_id, holderName: held.display_name_raw, expiresAt: held.expires_at } });
+        if (!body.takeoverReason) throw new ApiError(409, 'lease_held', `${held.display_name_raw} が編集中です。引継ぐには理由を入力してください`, { details: { holderUserId: held.user_id, holderName: held.display_name_raw, userId: held.user_id, userName: held.display_name_raw, expiresAt: held.expires_at } });
         await audit(tx, actor, { action: 'draft.lease_takeover', targetType: 'draft', targetId: id, matterId: draft.matter_id as string, details: { from: held.user_id, reason: body.takeoverReason } });
       }
       const r = await tx.query<Row>(
@@ -278,6 +279,7 @@ export async function draftRoutes(app: FastifyInstance): Promise<void> {
       );
       await tx.query(`UPDATE public.drafts SET status = 'in_review' WHERE id = $1 AND status IN ('draft','ready_for_review','changes_requested')`, [id]);
       if (body.note) await tx.query('INSERT INTO public.review_comments (org_id, review_id, body_raw, created_by) VALUES ($1, $2, $3, $4)', [draft.org_id, r.rows[0]!.id, body.note, actor.userId]);
+      for (const c of body.confirmations) await tx.query('INSERT INTO public.review_comments (org_id, review_id, field_key, body_raw, created_by) VALUES ($1, $2, $3, $4, $5)', [draft.org_id, r.rows[0]!.id, c.code, `【要確認: ${c.code}】${c.reason}`, actor.userId]);
       await audit(tx, actor, { action: 'review.requested', targetType: 'review', targetId: r.rows[0]!.id as string, targetHash: cur.hash, matterId: draft.matter_id as string, details: { reviewerId: body.reviewerId } });
       const u = await tx.query<{ display_name_raw: string }>('SELECT display_name_raw FROM public.app_users WHERE id = $1', [body.reviewerId]);
       const row = r.rows[0]!;

@@ -12,11 +12,11 @@ type Row = Record<string, unknown>;
 
 function evOut(r: Row): Evidence {
   return {
-    id: r.id as string, matterId: r.matter_id as string, symbolRaw: r.symbol_raw as string, numberRaw: r.number_raw as string, branchRaw: (r.branch_raw as string | null) ?? null, canonicalNumber: r.canonical_number as string, displayLabel: r.display_label as string, fileVersionId: (r.file_version_id as string | null) ?? null, fileName: (r.file_name as string | null) ?? null,
+    id: r.id as string, matterId: r.matter_id as string, symbolRaw: r.symbol_raw as string, numberRaw: r.number_raw as string, branchRaw: (r.branch_raw as string | null) ?? null, canonicalNumber: r.canonical_number as string, displayLabel: r.display_label as string, fileVersionId: (r.file_version_id as string | null) ?? null, fileId: (r.file_id as string | null) ?? null, fileName: (r.file_name as string | null) ?? null,
     titleRaw: r.title_raw as string, authorRaw: r.author_raw as string, dateRaw: r.date_raw as string, dateIso: (r.date_iso as string | null) ?? null, originalCopy: r.original_copy as 'copy', proofPurposeRaw: r.proof_purpose_raw as string, status: r.status as Evidence['status'], supersededBy: (r.superseded_by as string | null) ?? null, correctionReasonRaw: (r.correction_reason_raw as string | null) ?? null, updatedAt: r.updated_at as string, version: r.version as number,
   };
 }
-const EV_SELECT = `SELECT e.*, f.original_name_raw AS file_name FROM public.evidence e LEFT JOIN public.file_versions fv ON fv.id = e.file_version_id LEFT JOIN public.files f ON f.id = fv.file_id`;
+const EV_SELECT = `SELECT e.*, f.original_name_raw AS file_name, f.id AS file_id FROM public.evidence e LEFT JOIN public.file_versions fv ON fv.id = e.file_version_id LEFT JOIN public.files f ON f.id = fv.file_id`;
 
 function canonicalOf(symbolRaw: string, numberRaw: string, branchRaw: string | null): { canonical: string; label: string } {
   const parsed = parseEvidenceLabel(buildDisplayLabel(symbolRaw, numberRaw, branchRaw));

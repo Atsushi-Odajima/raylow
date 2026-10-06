@@ -8,7 +8,7 @@ import type { DraftSnapshot } from '@raylow/contracts';
 import type { Tx } from '../db.js';
 import { blobStore, sha256Hex } from '../blobs.js';
 import { config } from '../config.js';
-import { RenderError, renderDocx, scanLeftoverTags } from '../render/docx.js';
+import { RenderError, renderDocx } from '../render/docx.js';
 import { convertToPdf } from '../render/pdf.js';
 import { bundledFontManifest } from '../render/fonts.js';
 import { runPython, ToolError } from '../python.js';
@@ -87,8 +87,6 @@ export async function renderDraftJob(ctx: JobContext, tx: Tx): Promise<Record<st
     if (e instanceof RenderError) throw new JobFailure(e.code, e.message, false, e.details);
     throw e;
   }
-  const leftover = scanLeftoverTags(rendered.bytes);
-  if (leftover.length) throw new JobFailure('unreplaced_tag', `未置換タグが残っています: ${leftover.join(', ')}`, false, { unreplacedTags: leftover });
   if (!(await ctx.progress({ step: 'convert_pdf', label: 'PDF へ変換中' }))) throw new JobFailure('cancelled', 'キャンセルされました', false);
   let pdf: Buffer;
   let converterVersion: string;
@@ -135,7 +133,7 @@ export async function renderDraftJob(ctx: JobContext, tx: Tx): Promise<Record<st
   if (p.mode === 'draft') await tx.query(`UPDATE public.drafts SET status = 'ready_for_review' WHERE id = $1 AND status = 'rendering' AND current_revision_id = $2`, [p.draftId, p.revisionId]);
   if (p.batchItemId) await tx.query(`UPDATE public.batch_items SET status = 'succeeded', updated_at = now() WHERE id = $1`, [p.batchItemId]);
   await tx.query(`INSERT INTO public.audit_events (org_id, matter_id, actor_id, actor_role, action, target_type, target_id, target_hash, request_id, details) VALUES ($1, $2, $3, 'worker', $4, 'draft_revision', $5, $6, $7, $8)`, [ctx.job.org_id, r.matter_id, createdBy, p.mode === 'final' ? 'output.final_rendered' : 'output.draft_rendered', p.revisionId, pdfFile.sha256, ctx.job.id, JSON.stringify({ docxSha256: docxFile.sha256, pdfSha256: pdfFile.sha256, pages: pre.pages, converterVersion })]);
-  return { docxOutputId: o1.rows[0]!.id, pdfOutputId: o2.rows[0]!.id, docxSha256: docxFile.sha256, pdfSha256: pdfFile.sha256, pages: pre.pages, preflight: report };
+  return { draftId: p.draftId, revisionId: p.revisionId, mode: p.mode, docxOutputId: o1.rows[0]!.id, pdfOutputId: o2.rows[0]!.id, docxSha256: docxFile.sha256, pdfSha256: pdfFile.sha256, pages: pre.pages, preflight: report };
 }
 
 /** 書式版の架空データ試作（test_template） */
@@ -180,5 +178,5 @@ export async function testTemplateJob(ctx: JobContext, tx: Tx): Promise<Record<s
   const pre = await pdfPreflight(c.pdf, ['佐藤 一郎']).catch((e: Error) => { throw new JobFailure('preflight_failed', e.message, false); });
   const docx = await storeInternalFile(tx, ctx.job.org_id, null, rendered.bytes, `test_${t.revision as number}.docx`, 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', ctx.job.created_by, 'template');
   const pdf = await storeInternalFile(tx, ctx.job.org_id, null, c.pdf, `test_${t.revision as number}.pdf`, 'application/pdf', ctx.job.created_by, 'template');
-  return { outputFileId: pdf.fileId, docxFileId: docx.fileId, pdfSha256: pdf.sha256, pages: pre.pages, fonts: pre.fonts, unembeddedFonts: pre.unembeddedFonts, tagsInTemplate: rendered.tagsInTemplate, converterVersion: c.converterVersion };
+  return { templateVersionId: p.templateVersionId, outputFileId: pdf.fileId, docxFileId: docx.fileId, pdfSha256: pdf.sha256, pages: pre.pages, fonts: pre.fonts, unembeddedFonts: pre.unembeddedFonts, tagsInTemplate: rendered.tagsInTemplate, converterVersion: c.converterVersion };
 }

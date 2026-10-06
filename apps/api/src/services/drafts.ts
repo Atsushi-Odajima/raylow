@@ -4,6 +4,7 @@
  * 文書のフィールドは {rawValue, displayValue, sourceId, sourceVersion, manuallyOverridden} を保持する。
  */
 import { hashCanonical } from '@raylow/domain';
+import { findInvisible } from '@raylow/japanese-text';
 import { type DocumentAST, type FieldValues, type TemplateFieldSchema, parseTemplateFieldSchema, validateFieldValues, isFieldVisible } from '@raylow/template-schema';
 import type { DraftSnapshot, PreflightIssue, PreflightReport, RecipientSnapshot, RecipientType, RefreshCandidateSchema } from '@raylow/contracts';
 import type { z } from 'zod';
@@ -222,6 +223,20 @@ export function computePreflight(ctx: PreflightContext): PreflightReport {
   } else {
     push({ severity: 'warning', category: 'layout', code: 'preview_not_rendered', message: '最新版の PDF がまだ生成されていません。プレビューを更新してください' });
   }
+  // 字体未収録の可能性: PUA は正式出力を止める（適切な使用権のあるフォント追加または手動作成 PDF の取込へ）。IVS/SVS・制御文字は要確認。
+  const scanText = (label: string, text: string, loc: { fieldKey?: string; blockId?: string }) => {
+    for (const f of findInvisible(text)) {
+      if (f.category === 'pua') push({ severity: 'error', category: 'font', code: 'pua_character', message: `${label} に私用領域文字 ${f.codePoint}（外字）があります。字体が未検証のため出力を止めます`, ...loc });
+      else if (f.category === 'ivs' || f.category === 'variation_selector') push({ severity: 'confirm', category: 'font', code: 'variation_selector', message: `${label} に異体字セレクタ ${f.codePoint} があります。PDF の字形を確認してください`, ...loc });
+      else if (f.category === 'bidi' || f.category === 'zero_width' || f.category === 'control' || f.category === 'nul') push({ severity: 'confirm', category: 'other', code: 'invisible_character', message: `${label} に ${f.description}（${f.codePoint}）があります。削除は自動で行いません`, ...loc });
+    }
+  };
+  for (const f of ctx.schema.fields) {
+    const v = ctx.snapshot.fields[f.key]?.rawValue;
+    if (typeof v === 'string') scanText(f.label, v, { fieldKey: f.key });
+    else if (v && typeof v === 'object' && !Array.isArray(v) && typeof (v as { raw?: unknown }).raw === 'string') scanText(f.label, (v as { raw: string }).raw, { fieldKey: f.key });
+  }
+  for (const b of ctx.ast.blocks) if ('text' in b) scanText(`本文 ${b.id}`, b.text, { blockId: b.id });
   // 本文の未置換タグ風文字列（入力値に {..} が含まれる場合）
   for (const b of ctx.ast.blocks) {
     if ('text' in b && /\{[a-z_#/^][a-z0-9_]*\}/.test(b.text)) push({ severity: 'confirm', category: 'unreplaced_tag', code: 'tag_like_text_in_body', message: `本文にタグ風の文字列があります（${b.id}）。差込は行われません`, blockId: b.id });

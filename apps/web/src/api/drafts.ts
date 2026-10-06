@@ -119,6 +119,9 @@ export function useDocuments(q: DocumentsQuery) {
     getNextPageParam: (last) => last.nextCursor ?? undefined,
   });
 }
+export function fetchDocumentOutput(id: string): Promise<DocumentOutput> {
+  return apiRequest<DocumentOutput>(`/api/documents/${id}/output`, { schema: DocumentOutputSchema });
+}
 export function useDocumentOutput(id: string | null | undefined, opts: { refetchInterval?: number | false } = {}) {
   return useQuery({
     queryKey: draftKeys.output(id ?? ''),

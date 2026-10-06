@@ -2,7 +2,7 @@
  * S03 /templates: 種類 → 用途/承認状態 → 適用範囲。PC はカテゴリ横タブ＋行リスト、mobile は検索＋縦一覧。
  * 未公開は正式用に選べない（理由付き disabled）。sample_only は「サンプル・要確認」バッジ。
  */
-import { useState, useSyncExternalStore } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useTemplates } from '../api/templates';
 import { Badge, SampleOnlyBadge, statusTone } from '../components/Badge';
@@ -13,7 +13,7 @@ import { Tabs } from '../components/Tabs';
 import { EmptyState, ErrorState, LoadingState } from '../components/States';
 import { formatDateTime } from '../lib/format';
 import { TEMPLATE_SCOPE_LABEL, TEMPLATE_STATUS_LABEL, label, templateKindLabel } from '../lib/labels';
-import { sessionStore } from '../lib/session';
+import { useSession } from '../lib/session';
 
 type ScopeTab = 'all' | 'negotiation' | 'client' | 'court' | 'internal';
 
@@ -21,7 +21,7 @@ export function TemplatesPage() {
   const [scope, setScope] = useState<ScopeTab>('all');
   const [q, setQ] = useState('');
   const navigate = useNavigate();
-  const session = useSyncExternalStore(sessionStore.subscribe.bind(sessionStore), sessionStore.getState.bind(sessionStore), sessionStore.getState.bind(sessionStore));
+  const session = useSession();
   const canManage = session.info?.role === 'admin' || session.info?.role === 'lawyer';
   const list = useTemplates({ scope: scope === 'all' ? undefined : scope, q: q.trim() || undefined });
 

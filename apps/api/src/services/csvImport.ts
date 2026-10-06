@@ -29,13 +29,11 @@ export function decodeCsvStrict(buf: Buffer, encoding: 'utf8' | 'utf8_bom' | 'cp
     }
   };
   const tryCp932 = (): string | null => {
-    // iconv-lite は不正バイトを U+FFFD に置換するため、置換が発生したら失敗扱い（「?」置換を禁止）
-    const s = iconv.decode(buf, 'Shift_JIS');
-    if (s.includes('�')) return null;
-    // round-trip で可逆性を確認（strict）
-    const back = iconv.encode(s, 'Shift_JIS');
-    if (!back.equals(buf)) return null;
-    return s;
+    // iconv-lite は不正バイトを U+FFFD に置換する。置換が 1 文字でもあれば strict 失敗とする（「?」置換を禁止）。
+    // NEC/IBM 拡張には同じ文字に複数の符号位置があり byte 往復は可逆でないため、往復比較は行わない。
+    const decoded = iconv.decode(buf, 'cp932');
+    if (decoded.includes('\uFFFD')) return null;
+    return decoded;
   };
   if (encoding === 'utf8' || encoding === 'utf8_bom') {
     const t = tryUtf8();
@@ -79,6 +77,7 @@ export async function validateImportRows(tx: Tx, orgId: string, kind: ImportKind
     const line = idx + 2;
     for (const [k, v] of Object.entries(r)) {
       if (typeof v === 'string' && v.length > 0 && FORMULA_RE.test(v)) errors.push({ row: line, column: k, code: 'formula_injection', message: `先頭が「${v[0] === '\t' ? 'TAB' : v[0]}」の値は取り込めません（数式注入対策）。原文は JSON/TXT で保存してください` });
+      // eslint-disable-next-line no-control-regex
       if (typeof v === 'string' && /\u0000/.test(v)) errors.push({ row: line, column: k, code: 'nul_char', message: 'NUL 文字を含みます' });
     }
     for (const c of cols.required) if (!r[c]) errors.push({ row: line, column: c, code: 'required', message: `${c} が空です` });

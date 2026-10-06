@@ -112,6 +112,7 @@ export const MemberSchema = z.object({
   status: z.enum(['active', 'suspended', 'left']),
   lawyerId: UuidSchema.nullable(),
   mfaEnrolled: z.boolean(),
+  version: z.number().int(),
 });
 export type Member = z.infer<typeof MemberSchema>;
 export const MemberInviteSchema = z.object({ email: z.string().email().max(320), displayNameRaw: RawText(100).min(1), role: RoleSchema, initialPassword: z.string().min(12).max(1024).optional() });

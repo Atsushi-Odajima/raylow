@@ -1,0 +1,63 @@
+RayLaw v2 SOURCE_NOTES（依存版・参照資料・ライセンス）
+確認日: 2026-10-06（開発コンテナ内で npm registry / 公式ドキュメントを参照）
+
+■ 実行基盤（開発コンテナで実測）
+- Node.js 22.22.0（ICU 77.1 / Unicode 16.0）… Intl.Segmenter のグラフェム golden は tests/unicode で記録
+- npm 10.9.4
+- Python 3.13.16（lxml 6.1.3, pypdf 6.17.0, pillow 12.3.0, python-docx 1.2.0, fonttools 4.60.1）
+- PostgreSQL 16.15（Ubuntu）… Supabase local は Docker デーモン不在のため未起動（HANDOFF）
+- LibreOffice 24.2.7.2（soffice --headless）… Docker では Debian bookworm の apt 版を固定
+- ClamAV: docker image clamav/clamav:1.4.3（compose）。開発コンテナでは未接続（fail closed を DEV_ALLOW_UNSCANNED=true で緩和）
+- Tesseract: 開発コンテナに無く未接続（OCR 未実装）
+
+■ npm 依存（package-lock.json で固定。主要なもの）
+| パッケージ | 版 | ライセンス | 用途 | 参照 |
+| typescript | 5.9.3 | Apache-2.0 | | https://www.typescriptlang.org/ |
+| vite | 7.3.7 | MIT | web build | https://vite.dev/ |
+| react / react-dom | 19.3.0 | MIT | | https://react.dev/ |
+| react-router | 7.18.4 | MIT | | https://reactrouter.com/ |
+| @tanstack/react-query | 5.104.1 | MIT | | https://tanstack.com/query |
+| zod | 3.25.76 | MIT | 契約/検証 | https://zod.dev/ |
+| pdfjs-dist | 5.7.284 | Apache-2.0 | PDF 表示 | https://mozilla.github.io/pdf.js/ |
+| fastify | 5.12.5 | MIT | BFF | https://fastify.dev/ |
+| @fastify/cookie 11.1.2 / @fastify/multipart 9.4.0 / @fastify/rate-limit 10.3.0 / fastify-plugin 5.1.0 | MIT |
+| pg | 8.23.1 | MIT | Postgres | https://node-postgres.com/ |
+| otpauth | 9.5.2 | MIT | TOTP | https://github.com/hectorm/otpauth |
+| docxtemplater | 3.71.0 | MIT（OSS core のみ。有料 HTML/Image/Subtemplate module は未導入） | DOCX 差込 | https://docxtemplater.com/docs/ , https://github.com/open-xml-templating/docxtemplater |
+| pizzip | 3.3.0 | MIT | DOCX zip | https://github.com/open-xml-templating/pizzip |
+| lodash | 4.18.1 | MIT | docxtemplater inspect-module の実行時依存（core の devDependency のため明示追加） |
+| @xmldom/xmldom | 0.9.12 | MIT | DOCX XML 編集（草案表記段落挿入・メタデータ除去） |
+| csv-parse / csv-stringify | 6.2.1 / 6.9.0 | MIT | RFC4180 |
+| iconv-lite | 0.7.3 | MIT | CP932 strict decode/encode |
+| yazl | 3.3.1 | MIT | ZIP 生成（パック/エクスポート） |
+| pino | 9.14.0 | MIT | ログ（cookie/token は redact） |
+| dotenv | 17.2.3 | BSD-2-Clause |
+| vitest | 3.2.7 | MIT | テスト |
+| @playwright/test | 1.63.0 | Apache-2.0 | e2e（Chromium 1194 同梱環境） |
+| eslint 9.39.5 / typescript-eslint 8.71.1 | MIT |
+採用しなかったもの: argon2（native build 回避のため Node 標準 scrypt を採用）、vite-plugin-pwa（手書き sw.js で cache 範囲を静的 shell に限定）、Tiptap（初版は段落単位の textarea ブロックエディタ）。
+
+■ フォント（assets/fonts、SIL OFL 1.1、assets/licenses に全文）
+- Noto Sans JP / Noto Serif JP（Google Fonts 配布の可変フォント）: https://github.com/google/fonts/tree/main/ofl/notosansjp , .../notoserifjp
+- Bricolage Grotesque（可変）: https://github.com/google/fonts/tree/main/ofl/bricolagegrotesque
+- LibreOffice 24.2 は可変フォントを PDF へ Type3 で書き出すため、scripts/build_static_fonts.py（fontTools instancer）で静的インスタンスを生成し assets/fonts/static（git 管理外・Docker build で生成）を LibreOffice に見せる。Web は可変 TTF を @font-face で自己配信（CDN 不使用）。
+
+■ 文字・組版の参照
+- UAX #15 https://www.unicode.org/reports/tr15/（全文 NFKC を避ける根拠）
+- UAX #11 https://www.unicode.org/reports/tr11/（EastAsianWidth だけで幅を決めない）
+- JLReq https://www.w3.org/TR/jlreq/
+- WordprocessingML https://learn.microsoft.com/en-us/office/open-xml/word/how-to-open-and-add-text-to-a-word-processing-document
+
+■ 裁判所・競合（2026-10-06 確認。実装時に公式原文を再確認すること）
+- https://www.courts.go.jp/saiban/minjidejitaruka/minso_shiryou/index.html
+- https://www.courts.go.jp/mito/saiban/sonota_syosiki1/index.html
+- https://leala.ai/function04 , https://docs.bengo-kakumei.jp/guide/cloud/start/quick-start
+- 裁判所 profile は generic 1 件のみ（形式確認）。mints 完全対応とは表示しない。
+
+■ 基盤
+- Supabase RLS/GRANT/service role 境界: https://supabase.com/docs/guides/database/postgres/row-level-security
+- LibreOffice headless 起動引数: https://help.libreoffice.org/latest/en-US/text/shared/guide/start_parameters.html
+- Tesseract（未接続）: https://tesseract-ocr.github.io/tessdoc/
+
+■ 名称
+- RayLaw はユーザー指定名。商標・名称重複・ドメインの再確認は未実施。

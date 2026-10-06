@@ -18,7 +18,7 @@ const SYMBOL_ORDER = ['甲', '乙', '丙', '丁', '戊'];
 
 export function parseEvidenceLabel(raw: string): EvidenceNumber {
   const warnings: string[] = [];
-  const s = raw.replace(/[\s　]+/g, '');
+  const s = raw.replace(/[\s\u3000]+/g, '');
   const m = /^([甲乙丙丁戊]|[^\d０-９第号証の]+)第?([\d０-９]+)号?証?((?:の[\d０-９]+)*)$/.exec(s);
   if (!m) {
     warnings.push('unparsed');

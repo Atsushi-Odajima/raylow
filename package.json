@@ -2,6 +2,7 @@
   "name": "raylow",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "description": "RayLaw - 法律事務所の書類作成・訴訟準備アプリ (v2)",
   "license": "UNLICENSED",
   "engines": {
@@ -40,7 +41,9 @@
     "dotenv": "17.2.3",
     "eslint": "9.39.5",
     "globals": "17.13.0",
+    "otpauth": "9.5.2",
     "pg": "8.23.1",
+    "pizzip": "3.3.0",
     "tsx": "4.23.15",
     "typescript": "5.9.3",
     "typescript-eslint": "8.71.1",

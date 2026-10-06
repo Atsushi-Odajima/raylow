@@ -1,11 +1,11 @@
-import { useEffect, useSyncExternalStore } from 'react';
+import { useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router';
-import { sessionStore } from '../lib/session';
+import { sessionStore, useSession } from '../lib/session';
 import { LoadingState } from '../components/States';
 
 /** 認証・MFA 済みでなければ /login。確認中（初回・bfcache 復帰）は画面を隠す */
 export function RequireAuth() {
-  const state = useSyncExternalStore(sessionStore.subscribe.bind(sessionStore), sessionStore.getState.bind(sessionStore), sessionStore.getState.bind(sessionStore));
+  const state = useSession();
   const location = useLocation();
   useEffect(() => {
     if (state.status === 'unknown') void sessionStore.refresh();
@@ -19,11 +19,17 @@ export function RequireAuth() {
     );
   }
   if (state.status === 'checking') {
-    // bfcache 復帰など: 再検証が終わるまで旧画面を隠す
+    // bfcache 復帰・再ログイン後など: 再検証が終わるまで旧画面を不透明に覆って隠す。
+    // Outlet は unmount しない（未保存の入力をメモリ上に保持するため）
     return (
-      <div className="container" style={{ paddingTop: 'var(--space-8)' }}>
-        <LoadingState label="権限を再確認しています…" />
-      </div>
+      <>
+        <div aria-hidden="true" style={{ visibility: 'hidden' }}>
+          <Outlet />
+        </div>
+        <div className="auth-cover" role="status" aria-live="polite">
+          <LoadingState label="権限を再確認しています…" />
+        </div>
+      </>
     );
   }
   if (state.status === 'error') {

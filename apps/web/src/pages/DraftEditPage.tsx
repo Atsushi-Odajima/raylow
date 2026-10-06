@@ -65,7 +65,8 @@ export function DraftEditPage() {
       </div>
     );
   }
-  return <DraftEditor key={`${id}:${draft.data.currentRevision?.id ?? 'none'}`} id={id} initial={draft.data} />;
+  // key は draft id のみ（revision 変化で再マウントするとカーソル・IME が飛ぶ）。版の切替は resetFrom で明示的に行う
+  return <DraftEditor key={id} id={id} initial={draft.data} />;
 }
 
 function latestDraftPdf(outputs: DraftOutput[], revisionId: string | null): DraftOutput | null {
@@ -138,6 +139,21 @@ function DraftEditor({ id, initial }: { id: string; initial: DraftDetail }) {
   const touch = () => {
     setDirty(true);
     setChangeTick((t) => t + 1);
+  };
+  /** サーバーの版でローカル状態を置き換える（再読込・更新候補の採用・外部編集版の取込） */
+  const resetFrom = (d: DraftDetail) => {
+    const r = d.currentRevision;
+    setDetail(d);
+    setFields(r?.snapshot.fields ?? {});
+    setAst(r?.ast ?? emptyAST());
+    setAttachments(r?.snapshot.attachments ?? []);
+    setIssueDateRaw(r?.snapshot.issueDate ?? '');
+    setPhraseVersionIds(r?.snapshot.sources.phraseVersionIds ?? []);
+    setVersion(d.draft.version);
+    setDirty(false);
+    setFieldErrors({});
+    setSaveError(null);
+    qc.setQueryData(draftKeys.detail(id), d);
   };
   const onFieldChange = (key: string, v: FieldValue) => {
     setFields((f) => ({ ...f, [key]: v }));
@@ -262,10 +278,8 @@ function DraftEditor({ id, initial }: { id: string; initial: DraftDetail }) {
     try {
       if (dirty) await autosave.flush();
       const next = await applyCandidates(id, version, [...candSel]);
-      qc.setQueryData(draftKeys.detail(id), next);
-      // 新 revision を読み直す（key が変わり再マウント）
+      resetFrom(next);
       setCands(null);
-      void qc.invalidateQueries({ queryKey: draftKeys.detail(id) });
     } catch (e) {
       setCandErr(isApiError(e) ? e.userMessage() : '適用に失敗しました');
     } finally {
@@ -282,9 +296,8 @@ function DraftEditor({ id, initial }: { id: string; initial: DraftDetail }) {
     setExtMsg(null);
     try {
       const next = await uploadExternalEdit(id, f);
-      qc.setQueryData(draftKeys.detail(id), next);
+      resetFrom(next);
       setExtMsg({ kind: 'success', text: 'Word で編集した DOCX を外部編集版（新しい版）として取り込みました。検査・PDF 生成後に再レビューが必要です。本文エディタとは自動同期しません。' });
-      void qc.invalidateQueries({ queryKey: draftKeys.detail(id) });
     } catch (e) {
       setExtMsg({ kind: 'error', text: isApiError(e) ? e.userMessage() : '取込に失敗しました' });
     } finally {
@@ -508,9 +521,7 @@ function DraftEditor({ id, initial }: { id: string; initial: DraftDetail }) {
         onClose={() => setConflict(null)}
         onReload={() => {
           setConflict(null);
-          setDirty(false);
-          void qc.invalidateQueries({ queryKey: draftKeys.detail(id) });
-          void fetchDraft(id).then((d) => qc.setQueryData(draftKeys.detail(id), d));
+          void fetchDraft(id).then((d) => resetFrom(d)).catch((e: unknown) => setSaveError(isApiError(e) ? e.userMessage() : '再読込に失敗しました'));
         }}
         onSaveAsNew={() => {
           const cv = conflict?.currentVersion;
@@ -561,7 +572,7 @@ function DraftEditor({ id, initial }: { id: string; initial: DraftDetail }) {
       </Dialog>
       {candErr && !cands ? <Alert kind="error" live>{candErr}</Alert> : null}
       <div className="sticky-actions">
-        <SaveStatus state={autosave.state} savedAt={autosave.savedAt} errorMessage={saveError} />
+        <SaveStatus state={autosave.state} savedAt={autosave.savedAt} errorMessage={saveError} live={false} />
         <LinkButton to={`/documents/${id}/output`} small icon="output">
           出力画面
         </LinkButton>

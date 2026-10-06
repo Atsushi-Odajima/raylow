@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import type { z } from 'zod';
 import { useQuery } from '@tanstack/react-query';
 import { FileSchema, UploadFinalizeResponseSchema, UploadInitResponseSchema, UploadInitSchema, type FileInfo } from '@raylow/contracts';
 import { ApiError, apiRequest } from '../lib/apiClient';

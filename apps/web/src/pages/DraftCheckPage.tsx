@@ -2,7 +2,7 @@
  * S06 /drafts/:id/check: 停止エラー → 確認警告（理由必須） → 最終プレビュー → レビュー依頼。
  * 形式検査と法的審査は別表示。エラー時は関連 block/field へ戻す。
  */
-import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { draftKeys, renderDraft, requestReview, useDraft, usePreflight } from '../api/drafts';
@@ -12,7 +12,7 @@ import { isApiError } from '../lib/apiClient';
 import { outputDownloadUrl } from '../lib/download';
 import { formatDateTime } from '../lib/format';
 import { RECIPIENT_TYPE_LABEL, draftStatusLabel } from '../lib/labels';
-import { sessionStore } from '../lib/session';
+import { useSession } from '../lib/session';
 import { Alert } from '../components/Alert';
 import { Badge, SampleOnlyBadge, statusTone } from '../components/Badge';
 import { Button, LinkButton } from '../components/Button';
@@ -30,7 +30,7 @@ export function DraftCheckPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const session = useSyncExternalStore(sessionStore.subscribe.bind(sessionStore), sessionStore.getState.bind(sessionStore), sessionStore.getState.bind(sessionStore));
+  const session = useSession();
   const draft = useDraft(id);
   const preflight = usePreflight(id);
   const members = useMembers();

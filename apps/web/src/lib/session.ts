@@ -3,6 +3,7 @@
  * - GET /api/auth/session で確認。bfcache 復帰(pageshow persisted)時は再検証まで画面を隠す
  * - 401 を受けたら「再ログイン → 権限再確認」ダイアログへ通知する
  */
+import { useSyncExternalStore } from 'react';
 import { SessionInfoSchema, type SessionInfo } from '@raylow/contracts';
 
 export type SessionStatus = 'unknown' | 'checking' | 'ready' | 'error';
@@ -121,4 +122,12 @@ if (typeof window !== 'undefined') {
       void sessionStore.refresh();
     }
   });
+}
+
+const subscribeSession = (l: Listener): (() => void) => sessionStore.subscribe(l);
+const getSessionState = (): SessionState => sessionStore.getState();
+
+/** セッション状態を購読する hook（stable な subscribe/getSnapshot） */
+export function useSession(): SessionState {
+  return useSyncExternalStore(subscribeSession, getSessionState, getSessionState);
 }

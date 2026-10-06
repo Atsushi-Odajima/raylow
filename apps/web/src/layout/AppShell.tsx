@@ -1,7 +1,6 @@
-import { NavLink, Outlet, useNavigate } from 'react-router';
-import { useSyncExternalStore } from 'react';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router';
 import { useLogout } from '../api/auth';
-import { sessionStore } from '../lib/session';
+import { useSession } from '../lib/session';
 import { unsavedRegistry } from '../lib/unsaved';
 import { LogoHorizontal, LogoMark } from '../components/Logo';
 import { Icon, type IconName } from '../components/Icon';
@@ -16,7 +15,7 @@ const PRIMARY_NAV: Array<{ to: string; label: string; icon: IconName }> = [
 ];
 
 export function AppShell() {
-  const state = useSyncExternalStore(sessionStore.subscribe.bind(sessionStore), sessionStore.getState.bind(sessionStore), sessionStore.getState.bind(sessionStore));
+  const state = useSession();
   const logout = useLogout();
   const navigate = useNavigate();
   const user = state.info?.user;
@@ -32,11 +31,9 @@ export function AppShell() {
     <>
       <header className="app-header">
         <div className="container app-header__inner">
-          <a href="/create" className="app-header__brand" aria-label="RayLaw 作成画面へ">
-            <span className="app-header__brand--pc" style={{ display: 'contents' }}>
-              <LogoHorizontal height={28} />
-            </span>
-          </a>
+          <Link to="/create" className="app-header__brand" aria-label="RayLaw 作成画面へ">
+            <LogoHorizontal height={28} />
+          </Link>
           <nav className="app-nav app-nav--header" aria-label="主要メニュー">
             {PRIMARY_NAV.map((n) => (
               <NavLink key={n.to} to={n.to}>

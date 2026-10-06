@@ -3,7 +3,7 @@ import { Icon } from './Icon';
 
 export type SaveState = 'saved' | 'unsaved' | 'saving' | 'error';
 
-export function SaveStatus({ state, savedAt, errorMessage }: { state: SaveState; savedAt: Date | null; errorMessage?: string | null | undefined }) {
+export function SaveStatus({ state, savedAt, errorMessage, live = true }: { state: SaveState; savedAt: Date | null; errorMessage?: string | null | undefined; live?: boolean | undefined }) {
   let text = '';
   let icon: 'check' | 'alert' | 'spinner' | 'info' = 'info';
   switch (state) {
@@ -25,7 +25,7 @@ export function SaveStatus({ state, savedAt, errorMessage }: { state: SaveState;
       break;
   }
   return (
-    <span className={`save-status save-status--${state}`} role="status" aria-live="polite" aria-atomic="true">
+    <span className={`save-status save-status--${state}`} role={live ? 'status' : undefined} aria-live={live ? 'polite' : undefined} aria-atomic="true">
       <Icon name={icon} size={16} />
       <span>{text}</span>
     </span>

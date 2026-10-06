@@ -4,6 +4,7 @@
  */
 import { useState } from 'react';
 import type { SessionInfo } from '@raylow/contracts';
+import { sessionStore } from '../lib/session';
 import { login, mfaEnroll, mfaEnrollConfirm, mfaVerify } from '../api/auth';
 import { isApiError } from '../lib/apiClient';
 import { Alert } from './Alert';
@@ -30,6 +31,8 @@ export function LoginForm({ onSuccess, compact }: { onSuccess: (s: SessionInfo) 
     try {
       const r = await login({ email, password });
       setPassword('');
+      // ログイン直後の session（MFA 未完了）の CSRF token を取得してから MFA/enroll の POST を行う
+      await sessionStore.refresh();
       if (r.mfaEnrolled) setStage('mfa');
       else {
         const e = await mfaEnroll();

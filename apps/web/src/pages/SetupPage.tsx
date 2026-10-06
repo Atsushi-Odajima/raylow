@@ -19,8 +19,7 @@ import { Stepper } from '../components/Stepper';
 import { ErrorState, LoadingState } from '../components/States';
 import { VersionConflictDialog } from '../components/VersionConflictDialog';
 import { unsavedRegistry } from '../lib/unsaved';
-import { useSyncExternalStore } from 'react';
-import { sessionStore } from '../lib/session';
+import { useSession } from '../lib/session';
 
 type StepKey = 'office' | 'lawyers' | 'confirm';
 
@@ -165,7 +164,7 @@ function OfficeSection({ current, onSaved }: { current: OfficeProfile | null; on
 }
 
 function LawyersSection({ onNext }: { onNext: () => void }) {
-  const session = useSyncExternalStore(sessionStore.subscribe.bind(sessionStore), sessionStore.getState.bind(sessionStore), sessionStore.getState.bind(sessionStore));
+  const session = useSession();
   const lawyers = useLawyers();
   const members = useMembers(session.info?.role === 'admin' || session.info?.role === 'lawyer');
   const create = useCreateLawyer();

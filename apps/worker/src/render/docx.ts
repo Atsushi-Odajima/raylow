@@ -48,23 +48,24 @@ function collectTags(doc: Docxtemplater, iModule: InspectModuleInstance): string
   return [...keys];
 }
 
-function dataHas(data: RenderData, key: string): boolean {
-  return Object.prototype.hasOwnProperty.call(data, key);
-}
-
 /** 配列 item 内のキーも含めて、テンプレートの全タグが data で供給されるか */
 function findUnreplaced(iModule: InspectModuleInstance, data: RenderData): string[] {
   const tags = iModule.getAllTags() as Record<string, unknown>;
   const missing: string[] = [];
   const check = (o: Record<string, unknown>, scope: Record<string, unknown>[], prefix: string) => {
     for (const [k, v] of Object.entries(o)) {
-      const present = scope.some((s) => Object.prototype.hasOwnProperty.call(s, k));
-      if (!present) missing.push(prefix + k);
+      const holder = scope.find((s) => Object.prototype.hasOwnProperty.call(s, k));
+      if (!holder) missing.push(prefix + k);
       if (v && typeof v === 'object' && Object.keys(v as object).length > 0) {
-        // ループ内: data[k] が配列ならその要素をスコープに追加
-        const arr = scope.map((s) => s[k]).find((x) => Array.isArray(x)) as Array<Record<string, unknown>> | undefined;
-        const inner = arr && arr.length > 0 ? [...arr, ...scope] : scope;
-        check(v as Record<string, unknown>, inner, `${prefix}${k}.`);
+        const val = holder ? holder[k] : undefined;
+        if (Array.isArray(val)) {
+          // 配列ループ: 空なら中身は描画されないため検査不要。非空なら各要素 + 親スコープで検査
+          if (val.length === 0) continue;
+          check(v as Record<string, unknown>, [...(val as Array<Record<string, unknown>>), ...scope], `${prefix}${k}.`);
+        } else {
+          // 条件セクション（boolean 等）: 同じスコープで中身を検査
+          check(v as Record<string, unknown>, scope, `${prefix}${k}.`);
+        }
       }
     }
   };

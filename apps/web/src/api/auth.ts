@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { z } from 'zod';
+import type { z } from 'zod';
 import { LoginRequestSchema, LoginResponseSchema, MfaEnrollResponseSchema, MfaVerifyRequestSchema, SessionInfoSchema, type SessionInfo } from '@raylow/contracts';
 import { apiRequest } from '../lib/apiClient';
 import { queryClient } from '../lib/queryClient';

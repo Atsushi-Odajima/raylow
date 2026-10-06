@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { z } from 'zod';
+import type { z } from 'zod';
 import { DispatchRecordInputSchema, DispatchRecordSchema, DispatchVerifySchema, PacketCreateSchema, PacketSchema, PacketUpdateSchema, type DispatchRecord, type Packet } from '@raylow/contracts';
 import { apiRequest } from '../lib/apiClient';
 

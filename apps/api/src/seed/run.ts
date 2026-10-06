@@ -55,7 +55,7 @@ const U = Object.fromEntries(users.map((u) => [u.key, u.id!])) as Record<'aoba_a
 
 // 事務所プロファイル
 const office = await client.query<{ id: string }>(
-  `INSERT INTO public.office_profiles (org_id, revision, name_raw, address_raw, postcode_raw, phone_raw, fax_raw, email_raw, is_current, created_by) VALUES ($1, 1, '青葉法律事務所', '東京都千代田区霞が関一丁目１番１号　青葉ビル５階', '１００－００１３', '０３－１２３４－５６７８', '０３－１２３４－５６７９', 'info@aoba.example', true, $2) RETURNING id`,
+  `INSERT INTO public.office_profiles (org_id, revision, name_raw, address_raw, postcode_raw, phone_raw, fax_raw, email_raw, is_current, created_by) VALUES ($1, 1, '青葉法律事務所', '東京都千代田区霞が関一丁目１番１号\u3000青葉ビル５階', '１００－００１３', '０３－１２３４－５６７８', '０３－１２３４－５６７９', 'info@aoba.example', true, $2) RETURNING id`,
   [orgs.aoba, U.aoba_admin],
 );
 await client.query(`INSERT INTO public.office_profiles (org_id, revision, name_raw, address_raw, postcode_raw, phone_raw, is_current, created_by) VALUES ($1, 1, '港みなと法律事務所', '神奈川県横浜市中区港町１－１', '231-0017', '045-000-0000', true, $2)`, [orgs.minato, U.minato_admin]);
@@ -72,10 +72,10 @@ async function contact(orgId: string, type: string, name: string, kana: string, 
   await client.query('INSERT INTO public.contact_versions (org_id, contact_id, revision, snapshot, created_by) SELECT org_id, id, version, to_jsonb(c), $2 FROM public.contacts c WHERE id = $1', [r.rows[0]!.id, createdBy]);
   return r.rows[0]!.id;
 }
-const sato1 = await contact(orgs.aoba, 'lawyer', '佐藤 一郎', 'さとう いちろう', '第一法律事務所', '東京都中央区日本橋一丁目２番３号　日本橋第一ビル８階', '１０３－００２７', { phone: '０３－２２２２－０００１', fax: '０３－２２２２－０００２' }, U.staff);
-const sato2 = await contact(orgs.aoba, 'lawyer', '佐藤 一郎', 'さとう いちろう', '佐藤総合法律事務所', '大阪府大阪市北区西天満二丁目４番５号　西天満ビル３階', '５３０－００４７', { phone: '０６－３３３３－０００１' }, U.staff);
+const sato1 = await contact(orgs.aoba, 'lawyer', '佐藤 一郎', 'さとう いちろう', '第一法律事務所', '東京都中央区日本橋一丁目２番３号\u3000日本橋第一ビル８階', '１０３－００２７', { phone: '０３－２２２２－０００１', fax: '０３－２２２２－０００２' }, U.staff);
+const sato2 = await contact(orgs.aoba, 'lawyer', '佐藤 一郎', 'さとう いちろう', '佐藤総合法律事務所', '大阪府大阪市北区西天満二丁目４番５号\u3000西天満ビル３階', '５３０－００４７', { phone: '０６－３３３３－０００１' }, U.staff);
 const midori = await contact(orgs.aoba, 'organization', '株式会社ミドリ商事', 'かぶしきがいしゃみどりしょうじ', '', '東京都港区芝一丁目１番１号', '１０５－００１４', { phone: '０３－４４４４－０００１', email: 'legal@midori.example' }, U.staff);
-const takahashi = await contact(orgs.aoba, 'person', '髙橋　太郎', 'たかはし たろう', '', '東京都世田谷区成城六丁目７番８号', '１５７－００６６', {}, U.staff);
+const takahashi = await contact(orgs.aoba, 'person', '髙橋\u3000太郎', 'たかはし たろう', '', '東京都世田谷区成城六丁目７番８号', '１５７－００６６', {}, U.staff);
 const yamada = await contact(orgs.aoba, 'person', '山田 花子', 'やまだ はなこ', '', '千葉県船橋市本町１－２－３', '２７３－０００５', {}, U.staff);
 const kawasaki = await contact(orgs.aoba, 'organization', '﨑山建設株式会社', 'さきやまけんせつ', '', '埼玉県さいたま市浦和区高砂３丁目', '３３０－００６３', {}, U.staff);
 const midoriRep = await contact(orgs.aoba, 'person', '緑川 一郎', 'みどりかわ いちろう', '株式会社ミドリ商事（代表取締役）', '東京都港区芝一丁目１番１号', '１０５－００１４', {}, U.staff);
@@ -180,7 +180,7 @@ await client.query(`INSERT INTO public.audit_events (org_id, actor_id, actor_rol
 await client.query('COMMIT');
 await client.end();
 
-const credPath = path.join(REPO_ROOT, '.data', 'seed-credentials.json');
+const credPath = process.env.SEED_CREDENTIALS_PATH ? path.resolve(REPO_ROOT, process.env.SEED_CREDENTIALS_PATH) : path.join(REPO_ROOT, '.data', 'seed-credentials.json');
 fs.mkdirSync(path.dirname(credPath), { recursive: true });
 fs.writeFileSync(credPath, JSON.stringify({ generatedAt: new Date().toISOString(), note: 'デモ専用。公開 repo に含めない（.gitignore 対象）', users: users.map((u) => ({ key: u.key, email: u.email, role: u.role, org: u.orgKey, password: u.password, totpSecret: u.totpSecret })), ids: { orgs, matters: { m1, m2, m3, mMinato }, contacts: { sato1, sato2, midori, takahashi, yamada, kawasaki }, lawyers: { lawyerA, lawyerB } } }, null, 2), { mode: 0o600 });
 console.log(`seed: 完了。書式 ${templateCount} 件。資格情報は ${credPath} に保存しました（表示は一度だけ）`);

@@ -97,3 +97,7 @@
 .form-800 { max-width: 800px; }
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-4); }
 .form-grid .span-all { grid-column: 1 / -1; }
+
+/* 再検証中の覆い（旧画面を隠す。unmount はしない） */
+.auth-cover { position: fixed; inset: 0; z-index: 100; background: var(--color-bg); display: flex; align-items: flex-start; justify-content: center; padding: var(--space-8) var(--gutter); }
+.dialog--cover::backdrop { background: var(--color-bg); }

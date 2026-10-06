@@ -40,5 +40,5 @@ export async function externalEditJob(ctx: JobContext, tx: Tx): Promise<Record<s
   await tx.query(`INSERT INTO public.draft_outputs (org_id, revision_id, format, mode, file_id, sha256, renderer_version, font_manifest, preflight_report, status, created_by) VALUES ($1, $2, 'pdf', 'draft', $3, $4, $5, '[]', $6, 'ready', $7)`, [ctx.job.org_id, p.revisionId, f.rows[0]!.id, pdfSha, `external-edit;${c.converterVersion}`, JSON.stringify(report), ctx.job.created_by]);
   await tx.query(`UPDATE public.drafts SET status = 'ready_for_review' WHERE id = $1 AND current_revision_id = $2 AND status IN ('draft','rendering')`, [p.draftId, p.revisionId]);
   void config;
-  return { pdfSha256: pdfSha, warnings: report.inspectionWarnings.length };
+  return { draftId: p.draftId, revisionId: p.revisionId, pdfSha256: pdfSha, warnings: report.inspectionWarnings.length };
 }

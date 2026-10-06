@@ -44,6 +44,7 @@ export function parseTagBody(body: string): ParsedTag {
     if (key.includes('.')) reason = 'dot_path_not_allowed';
     else if (DANGEROUS_KEYS.has(key)) reason = 'dangerous_key';
     else if (/[|()+\-*/<>=!?:'"`\s]/.test(key)) reason = 'expression_not_allowed';
+    // eslint-disable-next-line no-control-regex
     else if (/[^\x00-\x7f]/.test(key)) reason = 'non_ascii_key';
     return { raw, kind, key, valid: false, reason };
   }

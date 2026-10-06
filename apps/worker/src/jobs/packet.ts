@@ -17,6 +17,7 @@ import { JobFailure, type JobContext } from './types.js';
 type Row = Record<string, unknown>;
 
 function safeEntryName(seq: number, display: string, ext: string, maxGraphemes: number): string {
+  // eslint-disable-next-line no-control-regex
   const cleaned = display.replace(/[\\/:*?"<>|\u0000-\u001f]/g, '＿').replace(/\.+$/, '').trim() || 'document';
   const short = graphemeLength(cleaned) > maxGraphemes ? truncateGraphemes(cleaned, maxGraphemes) : cleaned;
   return `${String(seq).padStart(3, '0')}_${short}.${ext}`;
@@ -112,7 +113,7 @@ export async function renderPacketJob(ctx: JobContext, tx: Tx): Promise<Record<s
     await tx.query(`INSERT INTO public.file_versions (org_id, file_id, revision, storage_key, sha256, size, kind, created_by) VALUES ($1, $2, 1, $3, $4, $5, 'original', $6)`, [ctx.job.org_id, f.rows[0]!.id, key, sha, zipBytes.length, ctx.job.created_by]);
     await tx.query(`UPDATE public.packets SET status = 'rendered', manifest_json = $2, hash = $3, file_id = $4 WHERE id = $1`, [p.packetId, JSON.stringify(manifest), sha, f.rows[0]!.id]);
     await tx.query(`INSERT INTO public.audit_events (org_id, matter_id, actor_id, actor_role, action, target_type, target_id, target_hash, request_id, details) VALUES ($1, $2, $3, 'worker', 'packet.rendered', 'packet', $4, $5, $6, $7)`, [ctx.job.org_id, packet.matter_id, ctx.job.created_by, p.packetId, sha, ctx.job.id, JSON.stringify({ items: manifestItems.length })]);
-    return { fileId: f.rows[0]!.id, sha256: sha, items: manifestItems.length };
+    return { packetId: p.packetId, fileId: f.rows[0]!.id, sha256: sha, items: manifestItems.length };
   } finally {
     await fs.rm(work, { recursive: true, force: true }).catch(() => undefined);
   }

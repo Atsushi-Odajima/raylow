@@ -82,7 +82,8 @@ export async function buildApp(): Promise<FastifyInstance> {
       return;
     }
     if (pgCode === '42501') {
-      void reply.status(404).send({ error: { code: 'not_found', message: '見つからないか、権限がありません', fieldErrors: [], requestId: req.id } });
+      req.log.warn({ requestId: req.id, dbMessage: (err as Error).message }, 'rls denied');
+      void reply.status(404).send({ error: { code: 'not_found', message: '見つからないか、権限がありません', fieldErrors: [], requestId: req.id, ...(config.isProd ? {} : { details: { dbMessage: (err as Error).message } }) } });
       return;
     }
     req.log.error({ err, requestId: req.id }, 'unhandled error');

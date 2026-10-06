@@ -34,7 +34,7 @@ async function loadBatch(tx: Tx, id: string): Promise<Batch> {
 }
 
 /** 宛先ごとに独立 snapshot。対象外当事者や他宛先を差し込まない。 */
-async function createItemDraft(tx: Tx, actor: Actor, batch: Row, tvRow: Row, recipient: { type: string; contactId: string | null }, idemp: string): Promise<{ draftId: string; revisionId: string; hash: string }> {
+async function createItemDraft(tx: Tx, actor: Actor, batch: Row, tvRow: Row, recipient: { type: string; contactId: string | null }, idemp: string): Promise<{ draftId: string; revisionId: string; hash: string; recipientName: string; recipientOrg: string }> {
   const schema = templateSchemaOf(tvRow);
   if (!schema.recipientTypes.includes(recipient.type as 'client')) throw new ApiError(422, 'validation_failed', `${tvRow.name as string} では宛先種別 ${recipient.type} を選べません`);
   const src = await loadSources(tx, batch.matter_id as string, recipient.contactId, null);
@@ -47,7 +47,7 @@ async function createItemDraft(tx: Tx, actor: Actor, batch: Row, tvRow: Row, rec
   const d = await tx.query<{ id: string }>(`INSERT INTO public.drafts (org_id, matter_id, template_id, kind, title_raw, status, recipient_type, recipient_contact_id, idempotency_key, batch_id, created_by) VALUES ($1, $2, $3, $4, $5, 'draft', $6, $7, $8, $9, $10) RETURNING id`, [actor.orgId, batch.matter_id, tvRow.template_id, tvRow.kind, title, recipient.type, recipient.contactId, idemp, batch.id, actor.userId]);
   const r = await tx.query<{ id: string }>(`INSERT INTO public.draft_revisions (org_id, draft_id, revision, template_version_id, snapshot_json, ast_json, kind, hash, created_by) VALUES ($1, $2, 1, $3, $4, $5, 'app', $6, $7) RETURNING id`, [actor.orgId, d.rows[0]!.id, tvRow.id, JSON.stringify(snapshot), JSON.stringify(ast), hash, actor.userId]);
   await tx.query('UPDATE public.drafts SET current_revision_id = $2 WHERE id = $1', [d.rows[0]!.id, r.rows[0]!.id]);
-  return { draftId: d.rows[0]!.id, revisionId: r.rows[0]!.id, hash };
+  return { draftId: d.rows[0]!.id, revisionId: r.rows[0]!.id, hash, recipientName: rs.nameRaw, recipientOrg: rs.organizationNameRaw };
 }
 
 export async function batchRoutes(app: FastifyInstance): Promise<void> {
@@ -55,6 +55,8 @@ export async function batchRoutes(app: FastifyInstance): Promise<void> {
     const actor = requireActor(req);
     const body = parseOrThrow(BatchCreateSchema, req.body);
     const uniqueTv = [...new Set(body.templateVersionIds)];
+    const recipientKeys = body.recipients.map((r) => `${r.type}:${r.contactId ?? 'none'}`);
+    if (new Set(recipientKeys).size !== recipientKeys.length) throw new ApiError(422, 'validation_failed', '同じ宛先が重複しています。宛先ごとに 1 件にしてください', { fieldErrors: [{ field: 'recipients', code: 'duplicate', message: '宛先が重複しています' }] });
     if (uniqueTv.length > BATCH_MAX_TEMPLATES || body.recipients.length > BATCH_MAX_RECIPIENTS || uniqueTv.length * body.recipients.length > BATCH_MAX_ITEMS) {
       throw new ApiError(422, 'batch_limit_exceeded', `一括生成は最大 ${BATCH_MAX_TEMPLATES} 書式 × ${BATCH_MAX_RECIPIENTS} 宛先、合計 ${BATCH_MAX_ITEMS} 成果物までです（指定: ${uniqueTv.length}×${body.recipients.length}=${uniqueTv.length * body.recipients.length}）`);
     }
@@ -89,10 +91,10 @@ export async function batchRoutes(app: FastifyInstance): Promise<void> {
           let item: Row;
           try {
             const created = await createItemDraft(tx, actor, batchRow, tv, rc, idemp);
-            const job = await enqueueJob(tx, actor, { type: 'render_draft', matterId: body.matterId, scopeKey: `draft:${created.draftId}`, payload: { draftId: created.draftId, revisionId: created.revisionId, mode: 'draft', hash: created.hash, batchItem: true } });
-            const ir = await tx.query<Row>(`INSERT INTO public.batch_items (org_id, batch_id, draft_id, template_version_id, recipient_snapshot, status, job_id, attempt) VALUES ($1, $2, $3, $4, $5, 'queued', $6, 1) RETURNING *`, [actor.orgId, batchRow.id, created.draftId, tv.id, JSON.stringify({ type: rc.type, contactId: rc.contactId }), job.jobId]);
+            const ir = await tx.query<Row>(`INSERT INTO public.batch_items (org_id, batch_id, draft_id, template_version_id, recipient_snapshot, status, attempt) VALUES ($1, $2, $3, $4, $5, 'queued', 1) RETURNING *`, [actor.orgId, batchRow.id, created.draftId, tv.id, JSON.stringify({ type: rc.type, contactId: rc.contactId, nameRaw: created.recipientName, organizationNameRaw: created.recipientOrg })]);
             item = ir.rows[0]!;
-            await tx.query(`UPDATE public.jobs SET payload = payload || jsonb_build_object('batchItemId', $2::text) WHERE id = $1`, [job.jobId, item.id]);
+            const job = await enqueueJob(tx, actor, { type: 'render_draft', matterId: body.matterId, scopeKey: `draft:${created.draftId}`, payload: { draftId: created.draftId, revisionId: created.revisionId, mode: 'draft', hash: created.hash, batchItem: true, batchItemId: item.id } });
+            await tx.query('UPDATE public.batch_items SET job_id = $2 WHERE id = $1', [item.id, job.jobId]);
           } catch (e) {
             if (e instanceof ApiError && e.status === 422) {
               await tx.query(`INSERT INTO public.batch_items (org_id, batch_id, template_version_id, recipient_snapshot, status, error_code, error_message) VALUES ($1, $2, $3, $4, 'failed', 'recipient_type_not_allowed', $5)`, [actor.orgId, batchRow.id, tv.id, JSON.stringify({ type: rc.type, contactId: rc.contactId }), e.message]);

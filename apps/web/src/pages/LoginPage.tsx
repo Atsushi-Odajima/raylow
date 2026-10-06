@@ -1,13 +1,13 @@
-import { useEffect, useSyncExternalStore } from 'react';
+import { useEffect } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { sessionStore } from '../lib/session';
+import { sessionStore, useSession } from '../lib/session';
 import { LoginForm } from '../components/LoginForm';
 import { BrandBlock } from '../layout/AppShell';
 
 /** MFA 画面では過去の文書を表示しない（この画面は AppShell の外） */
 export function LoginPage() {
-  const state = useSyncExternalStore(sessionStore.subscribe.bind(sessionStore), sessionStore.getState.bind(sessionStore), sessionStore.getState.bind(sessionStore));
+  const state = useSession();
   const navigate = useNavigate();
   const location = useLocation();
   const qc = useQueryClient();
