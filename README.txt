@@ -16,7 +16,7 @@ packages/           japanese-text（検索キー ver1・グラフェム・和暦
 supabase/migrations Postgres スキーマ・RLS・トリガー・ジョブキュー（Supabase local でも素の Postgres でも適用可）
 templates/demo      20 書式（template.docx + schema.json + provenance.json + sample_values.json + ast_sample.json）
 tests/              unit / db / security / unicode / templates / export / e2e（Playwright）、fixtures
-infra/ + docker-compose.yml   scanner(ClamAV) / document-worker(LibreOffice 同梱) / api / web(Caddy TLS)
+infra/ + docker-compose.yml   scanner(ClamAV) / document-worker(LibreOffice 同梱) / api / web(Caddy TLS)。infra/docker/demo.Dockerfile は単一コンテナのデモ配備用（docs/deploy-demo.md）
 docs/               要件一覧・ER・データ辞書・権限表・状態遷移・脅威モデル・運用・API 契約・SBOM
 assets/             ブランド素材・フォント（OFL）・アイコン
 
@@ -43,7 +43,7 @@ assets/             ブランド素材・フォント（OFL）・アイコン
 
 期待結果:
   npm ci            … エラーなく完了（package-lock.json 固定）
-  npx supabase db reset / npm run db:setup … "migrations applied: 6"
+  npx supabase db reset / npm run db:setup … "migrations applied: 7"
   npm run db:seed   … "seed: 完了。書式 20 件。"
   npm run dev       … api: "RayLaw API listening on http://127.0.0.1:3001", web: Vite "Local: http://localhost:5173/"
   ※ Docker 無しで worker をローカル実行する場合は python3 + lxml/pypdf/pillow/fonttools と LibreOffice が必要。`python3 -I scripts/build_static_fonts.py` で静的フォントを生成してから `npm run dev -w apps/worker`。

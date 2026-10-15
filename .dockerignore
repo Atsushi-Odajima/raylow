@@ -1,0 +1,20 @@
+# Docker build context から除外（イメージ内でビルドするもの・ローカル状態・秘密）
+.git
+node_modules
+**/node_modules
+**/dist
+**/*.tsbuildinfo
+.data
+.env
+.env.*
+!.env.example
+tests
+docs
+coverage
+playwright-report
+test-results
+supabase/.temp
+supabase/.branches
+assets/fonts/static
+*.zip
+*.log

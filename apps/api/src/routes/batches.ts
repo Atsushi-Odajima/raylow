@@ -55,11 +55,12 @@ export async function batchRoutes(app: FastifyInstance): Promise<void> {
     const actor = requireActor(req);
     const body = parseOrThrow(BatchCreateSchema, req.body);
     const uniqueTv = [...new Set(body.templateVersionIds)];
-    const recipientKeys = body.recipients.map((r) => `${r.type}:${r.contactId ?? 'none'}`);
-    if (new Set(recipientKeys).size !== recipientKeys.length) throw new ApiError(422, 'validation_failed', '同じ宛先が重複しています。宛先ごとに 1 件にしてください', { fieldErrors: [{ field: 'recipients', code: 'duplicate', message: '宛先が重複しています' }] });
+    // 上限（AC12）を先に判定し、次に宛先の重複を拒否する
     if (uniqueTv.length > BATCH_MAX_TEMPLATES || body.recipients.length > BATCH_MAX_RECIPIENTS || uniqueTv.length * body.recipients.length > BATCH_MAX_ITEMS) {
       throw new ApiError(422, 'batch_limit_exceeded', `一括生成は最大 ${BATCH_MAX_TEMPLATES} 書式 × ${BATCH_MAX_RECIPIENTS} 宛先、合計 ${BATCH_MAX_ITEMS} 成果物までです（指定: ${uniqueTv.length}×${body.recipients.length}=${uniqueTv.length * body.recipients.length}）`);
     }
+    const recipientKeys = body.recipients.map((r) => `${r.type}:${r.contactId ?? 'none'}`);
+    if (new Set(recipientKeys).size !== recipientKeys.length) throw new ApiError(422, 'validation_failed', '同じ宛先が重複しています。宛先ごとに 1 件にしてください', { fieldErrors: [{ field: 'recipients', code: 'duplicate', message: '宛先が重複しています' }] });
     const batch = await withUserTx(actor, async (tx) => {
       const existing = await tx.query<{ id: string }>('SELECT id FROM public.batches WHERE org_id = $1 AND idempotency_key = $2', [actor.orgId, body.idempotencyKey]);
       if (existing.rows[0]) return loadBatch(tx, existing.rows[0].id);

@@ -33,7 +33,23 @@ try {
     await client.query('GRANT anon, authenticated, service_role TO authenticator');
     console.log('created role authenticator');
   } else {
-    await client.query('GRANT anon, authenticated, service_role TO authenticator');
+    // 管理対象 Postgres（Supabase 等）では authenticator の所属が既に揃っており、再 GRANT に ADMIN 権限が無いことがある
+    const have = new Set(
+      (
+        await client.query(
+          `SELECT r.rolname FROM pg_auth_members am JOIN pg_roles r ON r.oid = am.roleid JOIN pg_roles m ON m.oid = am.member
+           WHERE m.rolname = 'authenticator' AND r.rolname IN ('anon', 'authenticated', 'service_role')`,
+        )
+      ).rows.map((x) => x.rolname),
+    );
+    const missing = ['anon', 'authenticated', 'service_role'].filter((x) => !have.has(x));
+    if (missing.length) {
+      try {
+        await client.query(`GRANT ${missing.join(', ')} TO authenticator`);
+      } catch (e) {
+        console.warn(`warning: authenticator への GRANT ${missing.join(', ')} に失敗しました（${e.message}）。管理対象 Postgres では既存のロール設定を使ってください`);
+      }
+    }
   }
   console.log(`migrations applied: ${n}`);
 } finally {

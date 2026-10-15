@@ -17,7 +17,7 @@ const Env = z.object({
   PYTHON_BIN: z.string().default('python3'),
   DOCUMENT_WORKER_DIR: z.string().default('./workers/documents'),
   RENDER_TMP_DIR: z.string().default('.data/tmp'),
-  BLOB_STORE: z.enum(['local', 'supabase']).default('local'),
+  BLOB_STORE: z.enum(['local', 'supabase', 'postgres']).default('local'),
   BLOB_LOCAL_DIR: z.string().default('.data/blobs'),
   SUPABASE_URL: z.string().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),

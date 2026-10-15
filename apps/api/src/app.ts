@@ -7,6 +7,7 @@ import { ZodError } from 'zod';
 import { config } from './config.js';
 import { ApiError } from './errors.js';
 import { authPlugin } from './plugins/auth.js';
+import { notFoundBody, registerWebStatic } from './plugins/web.js';
 import { registerRoutes } from './routes/index.js';
 
 export async function buildApp(): Promise<FastifyInstance> {
@@ -32,10 +33,6 @@ export async function buildApp(): Promise<FastifyInstance> {
       reply.header('X-Request-Id', req.id);
     }
     return payload;
-  });
-
-  app.setNotFoundHandler((req, reply) => {
-    void reply.status(404).send({ error: { code: 'not_found', message: '見つかりません', fieldErrors: [], requestId: req.id } });
   });
 
   app.setErrorHandler((err, req, reply) => {
@@ -92,5 +89,14 @@ export async function buildApp(): Promise<FastifyInstance> {
   });
 
   await registerRoutes(app);
+
+  // WEB_DIST_DIR 設定時は web(dist) を同一 origin で配信（単一コンテナ配備）。未設定なら 404 は JSON
+  if (config.webDistDir) {
+    await registerWebStatic(app, config.webDistDir, { hsts: config.cookieSecure });
+  } else {
+    app.setNotFoundHandler((req, reply) => {
+      void reply.status(404).send(notFoundBody(req.id));
+    });
+  }
   return app;
 }

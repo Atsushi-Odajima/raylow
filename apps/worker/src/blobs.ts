@@ -2,6 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { config } from './config.js';
+import { withServiceTx } from './db.js';
 
 export interface BlobStore {
   put(bytes: Buffer, key?: string): Promise<{ key: string; sha256: string; size: number }>;
@@ -37,7 +38,28 @@ class Supabase implements BlobStore {
     return Buffer.from(await res.arrayBuffer());
   }
 }
-export const blobStore: BlobStore = config.blobStore === 'supabase' ? new Supabase(config.supabase.url, config.supabase.serviceKey, config.supabase.bucket) : new LocalFs(config.blobLocalDir);
+/** private.blobs(bytea)。API 側 PgBlobStore と同じ表・同じ key 規則。INSERT のみ（immutable）。 */
+class PgBlobs implements BlobStore {
+  async put(bytes: Buffer, key = randomUUID()) {
+    if (!/^[0-9a-f-]{36}$/.test(key)) throw new Error('invalid storage key');
+    const sha256 = createHash('sha256').update(bytes).digest('hex');
+    try {
+      await withServiceTx((tx) => tx.query('INSERT INTO private.blobs (key, bytes, sha256, size) VALUES ($1, $2, $3, $4)', [key, bytes, sha256, bytes.length]));
+    } catch (e) {
+      if ((e as { code?: string }).code === '23505') throw new Error('blob already exists (immutable)');
+      throw e;
+    }
+    return { key, sha256, size: bytes.length };
+  }
+  async get(key: string) {
+    if (!/^[0-9a-f-]{36}$/.test(key)) throw new Error('invalid storage key');
+    const r = await withServiceTx((tx) => tx.query<{ bytes: Buffer }>('SELECT bytes FROM private.blobs WHERE key = $1', [key]));
+    const row = r.rows[0];
+    if (!row) throw new Error(`blob not found: ${key}`);
+    return row.bytes;
+  }
+}
+export const blobStore: BlobStore = config.blobStore === 'supabase' ? new Supabase(config.supabase.url, config.supabase.serviceKey, config.supabase.bucket) : config.blobStore === 'postgres' ? new PgBlobs() : new LocalFs(config.blobLocalDir);
 export function sha256Hex(b: Buffer): string {
   return createHash('sha256').update(b).digest('hex');
 }

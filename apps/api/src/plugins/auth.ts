@@ -55,6 +55,9 @@ export const authPlugin = fp(async (app: FastifyInstance) => {
   });
 
   app.addHook('preHandler', async (req: FastifyRequest, _reply: FastifyReply) => {
+    // API は必ず /api 配下。それ以外（WEB_DIST_DIR の静的配信・SPA fallback・404）は認証/CSRF の対象外
+    const pathname = req.url.split('?')[0] ?? '';
+    if (pathname !== '/api' && !pathname.startsWith('/api/')) return;
     const opts: AuthOptions = req.routeOptions.config.auth ?? {};
     const cookie = req.cookies[config.cookieName];
     const info = await resolveSession(cookie);

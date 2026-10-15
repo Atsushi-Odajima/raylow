@@ -15,6 +15,7 @@ Docker: node:22.22.0-bookworm-slim, caddy:2.10.2-alpine, clamav/clamav:1.4.3（c
 - 20 書式（templates/demo）: すべて sample_only、provenance に supervised=false。技術検証（検査・DOCX/PDF・フォント埋込・文字往復）は自動テスト済み。内容承認は未実施。
 - 一括生成（20×50、100 上限、宛先別 snapshot、部分失敗の再試行、cancel）、証拠台帳（canonical 番号・一意・訂正別版）、提出パック（検査→ZIP: 連番名・manifest.json・確認一覧.txt・派生提出用 PDF）、送付/提出記録、更新候補（refresh-candidates）、外部編集版の再取込、CSV 取込/エクスポート、全量バックアップ export、pg_dump バックアップ/復元スクリプト、監査 append-only、PWA（manifest + 手書き sw.js）。
 - セキュリティ: opaque cookie + CSRF/Origin + TOTP MFA（BFF 管理、replay 防止）、RLS（本人 claims）+ GRANT + cross-org トリガ + immutable トリガ、404 による存在秘匿、magic bytes/MIME/ZIP bomb/マクロ/OLE/外部参照/PDF JS 検査、ファイル quarantine と fail closed、job dedupe/lease/retry、ログ redact。
+- 単一コンテナ配備（デモ/検証用）: infra/docker/demo.Dockerfile（API + worker + web(dist) 配信を 1 コンテナ）、WEB_DIST_DIR による同一 origin 配信（CSP/HSTS 等は Caddyfile と同方針、SPA fallback）、BLOB_STORE=postgres（private.blobs、INSERT のみ）、SEED_DEMO_* による配備時資格情報、RAYLOW_SEED_ON_BOOT。手順と割り切りは docs/deploy-demo.md。ローカルでは dist 配信 + postgres blob 構成で smoke と e2e 6 件を通過。Docker イメージのビルド自体は本コンテナでは未検証。
 
 3. 未実装（AC 対応）
 ------------------
@@ -37,7 +38,7 @@ Docker: node:22.22.0-bookworm-slim, caddy:2.10.2-alpine, clamav/clamav:1.4.3（c
 - AC29 別のクリーン環境（Windows 11）での npm ci→build→migrate→seed→test の再現: 未実施（本コンテナでは再現）。
 - Supabase local（Docker デーモン不在）、Supabase Auth プロバイダ（GoTrue password grant）、Supabase Storage（SupabaseBlobStore）: コードはあるが未検証。既定は AUTH_PROVIDER=local / BLOB_STORE=local。
 - ClamAV 実機: 未接続。CLAMD_HOST 未設定時は fail closed（scan_failed）。開発では DEV_ALLOW_UNSCANNED=true で緩和（本番禁止）。
-- Docker compose / Dockerfile / Caddy: 構文のみ。ビルド・起動・TLS 取得は未検証。
+- Docker compose / Dockerfile（demo.Dockerfile 含む）/ Caddy: 構文のみ。ビルド・起動・TLS 取得は未検証（Docker デーモン不在）。demo 構成の中身（dist 配信・postgres blob・seed 上書き）は Docker 無しで同等に検証済み。
 - Windows Word での最終 DOCX 確認（AC09）: Word 無し。PDF 側のフォント埋込・文字往復のみ自動検証。
 - IME 実操作（AC08）: ブラウザ自動化では再現不可。純関数と実装のみ。
 - 法務書式の所内承認・販売前監修（AC28 の内容面）: 未実施。20 書式はすべて sample_only。
@@ -50,7 +51,7 @@ npm ci / npm run db:setup（素の Postgres）または npx supabase db reset / 
 
 6. 環境変数名（値は書かない）
 --------------------------
-NODE_ENV, RAYLOW_PUBLIC_ORIGIN, DATABASE_URL, DATABASE_URL_APP, DATABASE_URL_SERVICE, DB_AUTHENTICATOR_PASSWORD, AUTH_PROVIDER, SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, SESSION_ENCRYPTION_KEY, ALLOWED_ORIGINS, COOKIE_SECURE, BLOB_STORE, BLOB_LOCAL_DIR, SUPABASE_STORAGE_BUCKET, API_PORT, API_HOST, WORKER_ID, SOFFICE_BIN, FONTS_DIR, PYTHON_BIN, DOCUMENT_WORKER_DIR, RENDER_TMP_DIR, CLAMD_HOST, CLAMD_PORT, DEV_ALLOW_UNSCANNED, LOG_LEVEL, WORKER_POLL_MS, RAYLOW_DOMAIN, DATABASE_URL_SERVICE_DOCKER, SEED_CREDENTIALS_PATH（テスト用）, RAYLOW_WORKER_ONESHOT（テスト用）。
+NODE_ENV, RAYLOW_PUBLIC_ORIGIN, DATABASE_URL, DATABASE_URL_APP, DATABASE_URL_SERVICE, DB_AUTHENTICATOR_PASSWORD, AUTH_PROVIDER, SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, SESSION_ENCRYPTION_KEY, ALLOWED_ORIGINS, COOKIE_SECURE, BLOB_STORE, BLOB_LOCAL_DIR, SUPABASE_STORAGE_BUCKET, API_PORT, API_HOST, WORKER_ID, SOFFICE_BIN, FONTS_DIR, PYTHON_BIN, DOCUMENT_WORKER_DIR, RENDER_TMP_DIR, CLAMD_HOST, CLAMD_PORT, DEV_ALLOW_UNSCANNED, LOG_LEVEL, WORKER_POLL_MS, RAYLOW_DOMAIN, DATABASE_URL_SERVICE_DOCKER, SEED_CREDENTIALS_PATH（テスト用）, RAYLOW_WORKER_ONESHOT（テスト用）, PORT（PaaS 注入）, WEB_DIST_DIR, RAYLOW_MIGRATE_ON_BOOT, RAYLOW_SEED_ON_BOOT, SEED_DEMO_PASSWORD, SEED_DEMO_TOTP_SECRET（単一コンテナ配備用）, RAYLOW_E2E_BASE / RAYLOW_SEED_CREDENTIALS / RAYLOW_API / RAYLOW_ORIGIN（テスト用）。
 
 7. 書式監修状態
 --------------
@@ -78,6 +79,7 @@ NODE_ENV, RAYLOW_PUBLIC_ORIGIN, DATABASE_URL, DATABASE_URL_APP, DATABASE_URL_SER
 10. 外部環境の残作業
 -------------------
 - 利用者管理下の検証ホスト（Docker）で `RAYLOW_DOMAIN=<domain> docker compose --profile full up -d`、.env の本番値、Supabase（または Postgres）接続、ClamAV の起動確認、iPhone 実機検証（README.txt §4）。
+- 外から見られるデモ（本番ではない）: docs/deploy-demo.md（Render 単一コンテナ + Supabase Postgres、ClamAV 無し、デモ資格情報共有）。
 - Supabase Auth を使う場合: AUTH_PROVIDER=supabase、private.identity_links に auth.users.id ↔ app_users.id を登録、GoTrue の MFA は使わず BFF の TOTP を使う（または統合を追加）。
 - 日次バックアップのスケジュール化と暗号化、別権限の保管先、四半期の空環境復元訓練。
 - 弁護士 2 名以上の運用設定、初期 admin/lawyer の指定（オンボーディング責任者）。

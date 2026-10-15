@@ -1,13 +1,15 @@
 /**
  * BlobStore: 原本 bytes は immutable。storage key は UUID。長寿命の公開 URL は作らない。
  * local: BLOB_LOCAL_DIR/<key[0..2]>/<key>。supabase: private bucket（service role 経由、BFF 内部のみ）。
+ * postgres: private.blobs(bytea)。service_role でのみ到達。ファイルシステムが揮発する単一コンテナ配備向け。
  */
 import { createHash, randomUUID } from 'node:crypto';
 import fs from 'node:fs/promises';
 import { createReadStream } from 'node:fs';
 import path from 'node:path';
-import type { Readable } from 'node:stream';
+import { Readable } from 'node:stream';
 import { config } from '../config.js';
+import { withServiceTx } from '../db/pool.js';
 
 export interface BlobStore {
   put(bytes: Buffer, key?: string): Promise<{ key: string; sha256: string; size: number }>;
@@ -78,4 +80,44 @@ export class SupabaseBlobStore implements BlobStore {
   }
 }
 
-export const blobStore: BlobStore = config.blobStore === 'supabase' ? new SupabaseBlobStore(config.supabase.url, config.supabase.serviceRoleKey, config.supabase.bucket) : new LocalFsBlobStore(config.blobLocalDir);
+/** Postgres（private.blobs）。INSERT のみ（UPDATE/DELETE は権限・トリガーで拒否 = immutable）。 */
+export class PgBlobStore implements BlobStore {
+  async put(bytes: Buffer, key = randomUUID()): Promise<{ key: string; sha256: string; size: number }> {
+    if (!/^[0-9a-f-]{36}$/.test(key)) throw new Error('invalid storage key');
+    const sha256 = createHash('sha256').update(bytes).digest('hex');
+    try {
+      await withServiceTx((tx) => tx.query('INSERT INTO private.blobs (key, bytes, sha256, size) VALUES ($1, $2, $3, $4)', [key, bytes, sha256, bytes.length]));
+    } catch (e) {
+      if ((e as { code?: string }).code === '23505') throw new Error('blob already exists (immutable)');
+      throw e;
+    }
+    return { key, sha256, size: bytes.length };
+  }
+  async get(key: string): Promise<Buffer> {
+    if (!/^[0-9a-f-]{36}$/.test(key)) throw new Error('invalid storage key');
+    const r = await withServiceTx((tx) => tx.query<{ bytes: Buffer }>('SELECT bytes FROM private.blobs WHERE key = $1', [key]));
+    const row = r.rows[0];
+    if (!row) {
+      const err = new Error(`blob not found: ${key}`) as NodeJS.ErrnoException;
+      err.code = 'ENOENT';
+      throw err;
+    }
+    return row.bytes;
+  }
+  async stream(key: string): Promise<Readable> {
+    return Readable.from(await this.get(key));
+  }
+  async exists(key: string): Promise<boolean> {
+    if (!/^[0-9a-f-]{36}$/.test(key)) return false;
+    const r = await withServiceTx((tx) => tx.query('SELECT 1 FROM private.blobs WHERE key = $1', [key]));
+    return (r.rowCount ?? 0) > 0;
+  }
+}
+
+export function createBlobStore(): BlobStore {
+  if (config.blobStore === 'supabase') return new SupabaseBlobStore(config.supabase.url, config.supabase.serviceRoleKey, config.supabase.bucket);
+  if (config.blobStore === 'postgres') return new PgBlobStore();
+  return new LocalFsBlobStore(config.blobLocalDir);
+}
+
+export const blobStore: BlobStore = createBlobStore();

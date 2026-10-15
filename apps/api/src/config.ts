@@ -19,11 +19,16 @@ const EnvSchema = z.object({
   SESSION_ENCRYPTION_KEY: z.string().min(40),
   ALLOWED_ORIGINS: z.string().default('http://localhost:5173'),
   COOKIE_SECURE: z.string().default('false'),
-  BLOB_STORE: z.enum(['local', 'supabase']).default('local'),
+  // local = ファイルシステム、supabase = Supabase Storage、postgres = private.blobs(bytea)（揮発 FS の単一コンテナ配備向け）
+  BLOB_STORE: z.enum(['local', 'supabase', 'postgres']).default('local'),
   BLOB_LOCAL_DIR: z.string().default('.data/blobs'),
   SUPABASE_STORAGE_BUCKET: z.string().default('raylow-private'),
-  API_PORT: z.coerce.number().int().default(3001),
+  API_PORT: z.coerce.number().int().optional(),
+  // PaaS（Render 等）が注入する待受ポート。API_PORT 未指定時に使う
+  PORT: z.coerce.number().int().optional(),
   API_HOST: z.string().default('127.0.0.1'),
+  // 設定時は web(dist) を同一 origin で配信する（単一コンテナ配備）。未設定なら API のみ
+  WEB_DIST_DIR: z.string().optional(),
   DEV_ALLOW_UNSCANNED: z.string().default('false'),
   LOG_LEVEL: z.string().default('info'),
 });
@@ -48,8 +53,9 @@ export const config = {
   cookieSecure: env.COOKIE_SECURE === 'true',
   blobStore: env.BLOB_STORE,
   blobLocalDir: path.isAbsolute(env.BLOB_LOCAL_DIR) ? env.BLOB_LOCAL_DIR : path.join(REPO_ROOT, env.BLOB_LOCAL_DIR),
-  port: env.API_PORT,
+  port: env.API_PORT ?? env.PORT ?? 3001,
   host: env.API_HOST,
+  webDistDir: env.WEB_DIST_DIR ? (path.isAbsolute(env.WEB_DIST_DIR) ? env.WEB_DIST_DIR : path.join(REPO_ROOT, env.WEB_DIST_DIR)) : null,
   devAllowUnscanned: env.DEV_ALLOW_UNSCANNED === 'true' && env.NODE_ENV !== 'production',
   logLevel: env.LOG_LEVEL,
   cookieName: 'raylow_sid',

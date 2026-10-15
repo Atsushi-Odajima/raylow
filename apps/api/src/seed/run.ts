@@ -2,6 +2,7 @@
  * 開発・デモ用 seed（架空データのみ）。
  * 架空「青葉法律事務所」、同姓同名の「佐藤一郎」2名、売買代金案件、別案件 barrier、20 書式デモ。
  * パスワード/TOTP secret は初期化時に生成し .data/seed-credentials.json に保存（公開 repo へ固定値を入れない）。
+ * 配備環境では SEED_DEMO_PASSWORD / SEED_DEMO_TOTP_SECRET（環境変数、配備時に生成）で全デモユーザーに同じ値を与えられる。
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -12,14 +13,22 @@ import { REPO_ROOT, config } from '../config.js';
 import { encryptSecret, hashPassword, randomToken, sha256Hex } from '../auth/crypto.js';
 import { newTotpSecret } from '../auth/totp.js';
 import { buildSearchKey } from '@raylow/japanese-text';
-import { LocalFsBlobStore, SupabaseBlobStore, type BlobStore } from '../services/blobs.js';
+import { blobStore as blobs } from '../services/blobs.js';
+import { closePools } from '../db/pool.js';
 
 const client = new pg.Client({ connectionString: config.dbServiceUrl });
 await client.connect();
 await client.query('BEGIN');
 await client.query('SET LOCAL ROLE service_role');
 
-const blobs: BlobStore = config.blobStore === 'supabase' ? new SupabaseBlobStore(config.supabase.url, config.supabase.serviceRoleKey, config.supabase.bucket) : new LocalFsBlobStore(config.blobLocalDir);
+// デモ資格情報の上書き（配備時に環境変数で渡す。未設定ならユーザーごとにランダム生成）
+const demoPasswordEnv = process.env.SEED_DEMO_PASSWORD?.trim() || null;
+const demoTotpEnv = process.env.SEED_DEMO_TOTP_SECRET?.trim().toUpperCase() || null;
+if (demoPasswordEnv && demoPasswordEnv.length < 12) throw new Error('SEED_DEMO_PASSWORD は 12 文字以上にしてください');
+if (demoTotpEnv && !/^[A-Z2-7]{16,64}$/.test(demoTotpEnv)) throw new Error('SEED_DEMO_TOTP_SECRET は base32（A-Z2-7、16〜64 文字）にしてください');
+const demoPassword = () => demoPasswordEnv ?? randomToken(12);
+const demoTotpSecret = () => demoTotpEnv ?? newTotpSecret();
+const credentialsFromEnv = demoPasswordEnv != null || demoTotpEnv != null;
 
 const already = await client.query(`SELECT 1 FROM public.organizations WHERE name_raw = '青葉法律事務所'`);
 if (already.rowCount) {
@@ -31,12 +40,12 @@ if (already.rowCount) {
 
 interface SeedUser { key: string; email: string; name: string; role: 'admin' | 'lawyer' | 'staff'; orgKey: 'aoba' | 'minato'; password: string; totpSecret: string; id?: string }
 const users: SeedUser[] = [
-  { key: 'aoba_admin', email: 'admin@aoba.example', name: '青葉 事務局（管理者）', role: 'admin', orgKey: 'aoba', password: randomToken(12), totpSecret: newTotpSecret() },
-  { key: 'lawyerA', email: 'hanako@aoba.example', name: '青葉 花子', role: 'lawyer', orgKey: 'aoba', password: randomToken(12), totpSecret: newTotpSecret() },
-  { key: 'lawyerB', email: 'ken@aoba.example', name: '白川 健', role: 'lawyer', orgKey: 'aoba', password: randomToken(12), totpSecret: newTotpSecret() },
-  { key: 'staff', email: 'jimu@aoba.example', name: '事務 太郎', role: 'staff', orgKey: 'aoba', password: randomToken(12), totpSecret: newTotpSecret() },
-  { key: 'minato_lawyer', email: 'lawyer@minato.example', name: '港 一郎', role: 'lawyer', orgKey: 'minato', password: randomToken(12), totpSecret: newTotpSecret() },
-  { key: 'minato_admin', email: 'admin@minato.example', name: '港 事務局', role: 'admin', orgKey: 'minato', password: randomToken(12), totpSecret: newTotpSecret() },
+  { key: 'aoba_admin', email: 'admin@aoba.example', name: '青葉 事務局（管理者）', role: 'admin', orgKey: 'aoba', password: demoPassword(), totpSecret: demoTotpSecret() },
+  { key: 'lawyerA', email: 'hanako@aoba.example', name: '青葉 花子', role: 'lawyer', orgKey: 'aoba', password: demoPassword(), totpSecret: demoTotpSecret() },
+  { key: 'lawyerB', email: 'ken@aoba.example', name: '白川 健', role: 'lawyer', orgKey: 'aoba', password: demoPassword(), totpSecret: demoTotpSecret() },
+  { key: 'staff', email: 'jimu@aoba.example', name: '事務 太郎', role: 'staff', orgKey: 'aoba', password: demoPassword(), totpSecret: demoTotpSecret() },
+  { key: 'minato_lawyer', email: 'lawyer@minato.example', name: '港 一郎', role: 'lawyer', orgKey: 'minato', password: demoPassword(), totpSecret: demoTotpSecret() },
+  { key: 'minato_admin', email: 'admin@minato.example', name: '港 事務局', role: 'admin', orgKey: 'minato', password: demoPassword(), totpSecret: demoTotpSecret() },
 ];
 
 const orgs = {
@@ -179,9 +188,11 @@ if (fs.existsSync(demoRoot)) {
 await client.query(`INSERT INTO public.audit_events (org_id, actor_id, actor_role, action, target_type, details) VALUES ($1, $2, 'admin', 'seed.applied', 'organization', $3)`, [orgs.aoba, U.aoba_admin, JSON.stringify({ templates: templateCount, note: 'demo seed（架空データ）' })]);
 await client.query('COMMIT');
 await client.end();
+await closePools();
 
 const credPath = process.env.SEED_CREDENTIALS_PATH ? path.resolve(REPO_ROOT, process.env.SEED_CREDENTIALS_PATH) : path.join(REPO_ROOT, '.data', 'seed-credentials.json');
 fs.mkdirSync(path.dirname(credPath), { recursive: true });
 fs.writeFileSync(credPath, JSON.stringify({ generatedAt: new Date().toISOString(), note: 'デモ専用。公開 repo に含めない（.gitignore 対象）', users: users.map((u) => ({ key: u.key, email: u.email, role: u.role, org: u.orgKey, password: u.password, totpSecret: u.totpSecret })), ids: { orgs, matters: { m1, m2, m3, mMinato }, contacts: { sato1, sato2, midori, takahashi, yamada, kawasaki }, lawyers: { lawyerA, lawyerB } } }, null, 2), { mode: 0o600 });
 console.log(`seed: 完了。書式 ${templateCount} 件。資格情報は ${credPath} に保存しました（表示は一度だけ）`);
-for (const u of users) console.log(`  ${u.key.padEnd(14)} ${u.email.padEnd(28)} role=${u.role.padEnd(6)} password=${u.password} totp=${u.totpSecret}`);
+// 環境変数で与えた値はログに出さない（配備環境のログへ漏らさない）
+for (const u of users) console.log(`  ${u.key.padEnd(14)} ${u.email.padEnd(28)} role=${u.role.padEnd(6)} password=${credentialsFromEnv ? '(SEED_DEMO_PASSWORD)' : u.password} totp=${credentialsFromEnv ? '(SEED_DEMO_TOTP_SECRET)' : u.totpSecret}`);

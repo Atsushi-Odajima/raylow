@@ -7,6 +7,12 @@ import { login } from './helpers.js';
 
 test.describe('受任通知の縦断導線', () => {
   test('ログインから草案 PDF プレビュー・形式検査まで', async ({ page, isMobile }, testInfo) => {
+    // CSP 違反・未捕捉例外を集める（同一 origin 配信（WEB_DIST_DIR）時のセキュリティヘッダ検証を兼ねる）
+    const violations: string[] = [];
+    page.on('console', (m) => {
+      if (m.type() === 'error' && /Content Security Policy|Refused to/.test(m.text())) violations.push(m.text());
+    });
+    page.on('pageerror', (e) => violations.push(`pageerror: ${e.message}`));
     const started = Date.now();
     await login(page, 'lawyerA');
     await expect(page.getByRole('heading', { name: '書類を作る' })).toBeVisible();
@@ -46,6 +52,7 @@ test.describe('受任通知の縦断導線', () => {
     const elapsed = Date.now() - started;
     testInfo.annotations.push({ type: 'AC30 login→preview→check ms', description: String(elapsed) });
     console.log(`AC30 ${testInfo.project.name}: login→preview→check = ${elapsed} ms`);
+    expect(violations).toEqual([]);
   });
   test('ログアウト後に bfcache 復帰しても機密画面を表示しない', async ({ page }) => {
     await login(page, 'staff');

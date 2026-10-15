@@ -22,6 +22,8 @@ export function registerServiceWorker(): void {
     return;
   }
   window.addEventListener('load', () => {
+    // 初回インストール（controller 無し → clients.claim()）では reload しない。既存 controller の置換（更新）時だけ reload する
+    let hadController = navigator.serviceWorker.controller != null;
     navigator.serviceWorker
       .register('/sw.js', { updateViaCache: 'none', scope: '/' })
       .then((reg) => {
@@ -42,6 +44,10 @@ export function registerServiceWorker(): void {
       })
       .catch(() => undefined);
     navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController) {
+        hadController = true;
+        return;
+      }
       if (reloading) return;
       if (unsavedRegistry.hasUnsaved()) return;
       reloading = true;

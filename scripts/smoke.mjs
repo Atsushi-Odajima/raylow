@@ -5,8 +5,9 @@ import * as OTPAuth from 'otpauth';
 import { ROOT } from './db-lib.mjs';
 
 const BASE = process.env.RAYLOW_API ?? 'http://127.0.0.1:3001';
-const ORIGIN = 'http://localhost:5173';
-const creds = JSON.parse(fs.readFileSync(path.join(ROOT, '.data', 'seed-credentials.json'), 'utf8'));
+const ORIGIN = process.env.RAYLOW_ORIGIN ?? 'http://localhost:5173';
+const credsPath = process.env.SEED_CREDENTIALS_PATH ? path.resolve(ROOT, process.env.SEED_CREDENTIALS_PATH) : path.join(ROOT, '.data', 'seed-credentials.json');
+const creds = JSON.parse(fs.readFileSync(credsPath, 'utf8'));
 const userKey = process.argv[2] ?? 'lawyerA';
 const user = creds.users.find((u) => u.key === userKey);
 let cookie = '';
